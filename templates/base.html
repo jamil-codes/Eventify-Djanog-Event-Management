@@ -1,0 +1,42 @@
+{% load static tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% tailwind_css %}
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <link rel="shortcut icon" href="{% static 'favicon.svg' %}" type="image/svg+xml" />
+    <script defer src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <title>
+      {% block title %}
+        Eventify
+      {% endblock %}
+    </title>
+  </head>
+  <body>
+    {% include 'components/Navbar.html' %}
+    {% block body %}
+      <div class="mx-auto max-w-[1250px] w-[95%]">
+        <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl">Hello World</h1>
+      </div>
+    {% endblock %}
+
+    {% include 'components/footer.html' %}
+
+    <script>
+      const themeToggle = document.querySelector('.theme-controller')
+      const savedTheme = localStorage.getItem('theme') || 'light'
+      
+      document.documentElement.setAttribute('data-theme', savedTheme)
+      if (savedTheme === 'dark') themeToggle.checked = true
+      
+      themeToggle.addEventListener('change', (e) => {
+        const theme = e.target.checked ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', theme)
+        localStorage.setItem('theme', theme)
+      })
+    </script>
+  </body>
+</html>

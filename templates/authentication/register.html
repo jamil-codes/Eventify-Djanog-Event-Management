@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Register - Eventify
+{% endblock %}
+
+{% block body %}
+  <div class="min-h-[75dvh] flex flex-col justify-center items-center max-w-[1000px] w-[95%] mx-auto">
+    <h1 class="text-4xl font-extrabold leading-none mt-8 mb-14 tracking-tight max-w-[60ch] mx-auto md:text-5xl lg:text-6xl">Register - Eventify</h1>
+
+    <form class="mb-5 flex flex-col justify-start items-start gap-4 w-full [&_>*]:w-full" action="{% url 'authentication:register' %}" method="post">
+      {% csrf_token %}
+      <div>
+        <label for="id_name">Name:</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+          <div class="text-error">{{ form.name.errors }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="id_username">Username:</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="text-error">{{ form.username.errors }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="id_email">Email:</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="text-error">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="id_password1">Password:</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+          <div class="text-error">{{ form.password1.errors }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="id_password2">Confirm Password:</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+          <div class="text-error">{{ form.password2.errors }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="id_profile_pic" class="block mb-2">Profile Pic:</label>
+
+        {{ form.profile_pic }}
+        <br />
+        {% if form.profile_pic.errors %}
+          <div class="text-error">{{ form.profile_pic.errors }}</div>
+        {% endif %}
+      </div>
+      <p>
+        <button type="submit" class="mt-1 btn w-fit btn-primary">Submit</button>
+      </p>
+    </form>
+    <!-- ✅ Login route link -->
+    <p class="mb-16 text-start w-full">
+      Already have an account?
+      <a href="{% url 'authentication:login' %}" class="text-primary font-semibold hover:underline">Login here</a>.
+    </p>
+  </div>
+{% endblock %}

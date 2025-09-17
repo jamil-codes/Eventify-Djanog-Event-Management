@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Login - Eventify
+{% endblock %}
+
+{% block body %}
+  <div class="min-h-[75dvh] flex flex-col justify-center items-center max-w-[1000px] w-[95%] mx-auto">
+    <h1 class="text-4xl font-extrabold leading-none mt-8 mb-14 tracking-tight max-w-[60ch] mx-auto md:text-5xl lg:text-6xl">Login - Eventify</h1>
+
+    <form class="mb-5 flex flex-col justify-start items-start gap-4 w-full [&_>*]:w-full" action="{% url 'authentication:login' %}" method="post">
+      {% csrf_token %}
+      <div>
+        <label for="id_username">Username:</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="text-error">{{ form.username.errors }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="id_password">Password:</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div class="text-error">{{ form.password.errors }}</div>
+        {% endif %}
+      </div>
+      <p>
+        <button type="submit" class="btn w-fit btn-primary">Submit</button>
+      </p>
+    </form>
+    <!-- ✅ Login route link -->
+    <p class="mb-16 text-start w-full">
+      Don't Have an account?
+      <a href="{% url 'authentication:register' %}" class="text-primary font-semibold hover:underline">Register Here</a>.
+    </p>
+  </div>
+{% endblock %}
