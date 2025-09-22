@@ -40,3 +40,21 @@
     --depth: 0;
     --noise: 0;
 }
+
+.textarea-custom {
+    --input-color: color-mix(in oklab, var(--color-base-content) 20%, #0000);
+    border: var(--border) solid #0000;
+    min-height: calc(0.25rem * 20);
+    field-sizing: content;
+    appearance: none;
+    border-radius: var(--radius-field);
+    background-color: var(--color-base-100);
+    padding-block: calc(0.25rem * 2);
+    vertical-align: middle;
+    padding-inline-start: 0.75rem;
+    padding-inline-end: 0.75rem;
+    font-size: 0.875rem;
+    touch-action: manipulation;
+    border-color: var(--input-color);
+    resize: none;
+}

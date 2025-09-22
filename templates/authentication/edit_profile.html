@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Edit Profile - Eventify
+{% endblock %}
+
+{% block body %}
+  <div class="min-h-[75dvh] flex flex-col justify-center items-center max-w-[1000px] w-[95%] mx-auto">
+    <h1 class="text-4xl font-extrabold leading-none mt-8 mb-14 tracking-tight max-w-[60ch] mx-auto md:text-5xl lg:text-6xl">Edit Profile - Eventify</h1>
+
+    <form class="mb-5 flex flex-col justify-start items-start gap-4 w-full [&_>*]:w-full" action="{% url 'authentication:edit_profile' request.user.username %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Name -->
+      <div>
+        <label for="{{ form.name.id_for_label }}">Name:</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+          <div class="text-error">{{ form.name.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Tagline -->
+      <div>
+        <label for="{{ form.tagline.id_for_label }}">Tagline:</label>
+        {{ form.tagline }}
+        {% if form.tagline.errors %}
+          <div class="text-error">{{ form.tagline.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="{{ form.description.id_for_label }}">Description:</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <div class="text-error">{{ form.description.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Profile Picture -->
+      <div>
+        <label for="{{ form.profile_pic.id_for_label }}" class="block mb-2">Profile Pic:</label>
+        {{ form.profile_pic }}
+        {% if form.profile_pic.errors %}
+          <div class="text-error">{{ form.profile_pic.errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Submit -->
+      <p>
+        <button type="submit" class="mt-1 btn w-fit btn-primary">Save Changes</button>
+        <a href="{% url 'authentication:profile' request.user.username %}" class="btn btn-secondary ml-2">Cancel</a>
+      </p>
+    </form>
+  </div>
+{% endblock %}

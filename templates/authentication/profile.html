@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ user.name }} ({{ user.username }}) - Eventify
+{% endblock %}
+
+{% block body %}
+  <div class="min-h-[75dvh] flex flex-col items-center max-w-6xl w-[95%] mx-auto py-12">
+    <!-- Profile Header -->
+    <div class="flex flex-col md:flex-row items-center md:items-start gap-12 w-full">
+      <!-- Profile Picture -->
+      <div class="relative">
+        <div class="w-44 h-44 overflow-hidden rounded-full aspect-square border-4 border-primary shadow-lg">
+          {% if user.profile_pic %}
+            <img src="{{ user.profile_pic.url }}" alt="{{ user.name }}" class="aspect-square w-full h-full object-cover" />
+          {% else %}
+            <img src="{% static 'images/default-profile.webp' %}" alt="Default profile" class="aspect-square w-full h-full object-cover" />
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- User Info -->
+      <div class="flex-1 flex flex-col gap-4">
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">
+          {{ user.name }}
+          <span class="text-primary font-medium">@{{ user.username }}</span>
+        </h1>
+
+        <p class="text-gray-600 text-lg">
+          <span class="font-semibold">Email:</span> {{ user.email }}
+        </p>
+
+        <p class="text-gray-600 text-lg">
+          <span class="font-semibold">Role:</span> {{ user.get_role_display }}
+        </p>
+
+        {% if user.tagline %}
+          <p class="italic text-gray-500 text-lg">“{{ user.tagline }}”</p>
+        {% endif %}
+
+
+        <!-- Social Stats -->
+        <div class="flex gap-12 mt-6">
+          <div class="flex flex-col items-center">
+            <span class="font-bold text-2xl">{{ user.followers.count }}</span>
+            <span class="text-gray-500 text-sm">Followers</span>
+          </div>
+          {% if user.role == 'attendee' %}
+            <div class="flex flex-col items-center">
+              <span class="font-bold text-2xl">{{ user.following.count }}</span>
+              <span class="text-gray-500 text-sm">Following</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-12 flex flex-wrap gap-6 justify-center">
+      {% if request.user != user %}
+        <form method="post" action="{% url 'authentication:follow_toggle' user.username %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary px-8 py-2 rounded-lg shadow hover:scale-105 transition">
+            {% if user in request.user.following.all %}
+              Unfollow
+            {% else %}
+              Follow
+            {% endif %}
+          </button>
+        </form>
+      {% endif %}
+
+      {% if request.user == user %}
+        <a href="{% url 'authentication:edit_profile' request.user.username %}" class="btn btn-secondary px-8 py-2 rounded-lg shadow hover:scale-105 transition">Edit Profile</a>
+      {% endif %}
+    </div>
+
+    <!-- Optional Section: More Info -->
+    <div class="mt-20 w-full border-t pt-10">
+      <h2 class="text-2xl font-bold mb-6">About {{ user.name }}</h2>
+      {% if user.description %}
+        <p class="text-gray-700 leading-relaxed">{{ user.description }}</p>
+      {% else %}
+        <p class="text-gray-500 italic">This user hasn’t shared any information yet.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

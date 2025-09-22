@@ -23,8 +23,16 @@ class UserRegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['name', 'username',  'email',
-                  'profile_pic', 'password1', 'password2']
+        fields = [
+            'name',
+            'username',
+            'email',
+            'tagline',
+            'description',
+            'profile_pic',
+            'password1',
+            'password2',
+        ]
 
         widgets = {
             'name': forms.TextInput(attrs={
@@ -38,15 +46,29 @@ class UserRegisterForm(UserCreationForm):
             'email': forms.EmailInput(attrs={
                 'class': input_class,
                 'placeholder': "Email"
-            })
+            }),
+            'tagline': forms.TextInput(attrs={
+                'class': input_class,
+                'placeholder': "Your tagline (optional)"
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'textarea-custom w-full my-2 ',
+                'placeholder': "Tell us about yourself (optional)",
+                'rows': 3
+            }),
+            'profile_pic': forms.ClearableFileInput(attrs={
+                'class': "file-input file-input-bordered my-2 h-fit w-full"
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Enforce required rules
+        # Required / optional settings
         self.fields['username'].required = True
         self.fields['name'].required = True
         self.fields['email'].required = True
+        self.fields['tagline'].required = False
+        self.fields['description'].required = False
         self.fields['profile_pic'].required = False
 
 
@@ -63,3 +85,28 @@ class UserLoginForm(AuthenticationForm):
             'placeholder': "Password"
         })
     )
+
+
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['name', 'tagline', 'description', 'profile_pic']
+
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': input_class,
+                'placeholder': "Full Name"
+            }),
+            'tagline': forms.TextInput(attrs={
+                'class': input_class,
+                'placeholder': "Short tagline"
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'textarea-custom w-full my-2 ',
+                'placeholder': "Tell us about yourself..."
+
+            }),
+            'profile_pic': forms.ClearableFileInput(attrs={
+                'class': "file-input file-input-bordered my-2 h-fit w-full"
+            }),
+        }

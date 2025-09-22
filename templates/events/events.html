@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Events - Eventify
+{% endblock %}
+
+{% block body %}
+  <div class="mx-auto max-w-[1250px] w-[95%] min-h-[75dvh]">
+    <h1 class="text-4xl font-extrabold leading-none mt-8 mb-14 tracking-tight max-w-[60ch] mx-auto md:text-5xl lg:text-6xl">Events</h1>
+
+    {% if request.user.is_authenticated and request.user.role == 'organizer' %}
+      <div class="w-full flex items-end justify-end">
+        <a href="{% url 'events:add_event' %}" type="submit" class="btn w-fit btn-primary">Add New Event</a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

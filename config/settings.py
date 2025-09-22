@@ -1,5 +1,6 @@
 from pathlib import Path
 from decouple import config
+from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,6 +21,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'tailwind',
     'theme',
+    'events',
     'authentication',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -120,8 +122,11 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static/"
 ]
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 AUTH_USER_MODEL = 'authentication.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+LOGIN_URL = reverse_lazy('authentication:login')
