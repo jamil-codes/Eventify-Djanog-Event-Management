@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import EventForm
-from .models import Event
+from ..forms import EventForm
+from ..models import Event, TicketType
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 
 def events(request):
     events = Event.objects.all().order_by('-timestamp', '-pk')
-    return render(request, 'events/events.html', {'events': events})
+    return render(request, 'events/event_templates/events.html', {'events': events})
 
 
 @login_required
@@ -30,13 +30,15 @@ def add_event(request):
     else:
         form = EventForm()
 
-    return render(request, 'events/add_event.html', {'form': form})
+    return render(request, 'events/event_templates/add_event.html', {'form': form})
 
 
 def event_detail(requst, pk):
     event = get_object_or_404(Event, pk=pk)
-    return render(requst, 'events/event_detail.html', {
-        'event': event
+    ticket_types = TicketType.objects.filter(event=event).order_by('price')
+    return render(requst, 'events/event_templates/event_detail.html', {
+        'event': event,
+        'ticket_types': ticket_types
     })
 
 
@@ -55,7 +57,7 @@ def edit_event(request, pk):
     else:
         form = EventForm(instance=event)
 
-    return render(request, 'events/edit_event.html', {
+    return render(request, 'events/event_templates/edit_event.html', {
         'form': form,
         'event': event
     })
