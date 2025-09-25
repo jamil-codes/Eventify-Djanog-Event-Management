@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Delete Ticket Type - Eventify
+{% endblock %}
+
+{% block body %}
+  <div class="min-h-[75dvh] flex flex-col justify-center items-center max-w-[800px] w-[95%] mx-auto text-center">
+    <h1 class="text-4xl font-extrabold leading-none mt-8 mb-10 tracking-tight md:text-5xl lg:text-6xl">Delete Ticket Type</h1>
+
+    <div class="bg-base-200 shadow-md border border-base-300 rounded-lg p-8 max-w-lg w-full">
+      <p class="text-lg mb-6">
+        Are you sure you want to <span class="font-semibold text-error">delete</span>
+        the ticket type <span class="font-bold">"{{ ticket_type.name }}"</span> for event <span class="font-bold">"{{ event.title }}"</span>?
+      </p>
+
+      <form action="{% url 'events:delete_ticket_type' event.pk ticket_type.pk %}" method="post" class="flex flex-col sm:flex-row justify-center gap-4 mt-14">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-error flex items-center gap-2 w-full sm:w-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M6 18L18 6M6 6l12 12" />
+          </svg>Delete
+        </button>
+        <a href="{% url 'events:event_detail' event.pk %}" class="btn btn-outline w-full sm:w-auto">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

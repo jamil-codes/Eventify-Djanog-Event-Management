@@ -10,12 +10,12 @@ class Event(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     location = models.TextField()
     image = models.ImageField(upload_to='events/')
-    orgenizer = models.ForeignKey(
+    organizer = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="events"
     )
 
     def __str__(self):
-        return f'{self.title} by {self.orgenizer}'
+        return f'{self.title} by {self.organizer}'
 
 
 class TicketType(models.Model):
