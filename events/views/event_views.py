@@ -3,15 +3,26 @@ from ..forms import EventForm
 from ..models import Event, TicketType
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from decouple import config
+
+MAX_EVENTS_PER_PAGE = config('MAX_EVENTS_PER_PAGE', default=10)
 
 
 def events(request):
     # Show only events created by organizers or admins
-    events = Event.objects.filter(
+    event_list = Event.objects.filter(
         organizer__role__in=['organizer', 'admin']
     ).order_by('-start_time', '-pk')
 
-    return render(request, 'events/event_templates/events.html', {'events': events})
+    # Pagination (10 events per page, adjust as needed)
+    paginator = Paginator(event_list, MAX_EVENTS_PER_PAGE)
+    page_number = request.GET.get('page')
+    events = paginator.get_page(page_number)
+
+    return render(request, 'events/event_templates/events.html', {
+        'events': events
+    })
 
 
 @login_required
