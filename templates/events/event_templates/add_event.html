@@ -32,6 +32,13 @@
         {% endif %}
       </div>
       <div>
+        <label for="id_start_time">Start Time:</label>
+        {{ form.start_time }}
+        {% if form.start_time.errors %}
+          <div class="text-error">{{ form.start_time.errors }}</div>
+        {% endif %}
+      </div>
+      <div>
         <label for="id_image">image:</label>
         {{ form.image }}
         {% if form.image.errors %}

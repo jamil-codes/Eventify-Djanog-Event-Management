@@ -9,7 +9,7 @@ def events(request):
     # Show only events created by organizers or admins
     events = Event.objects.filter(
         organizer__role__in=['organizer', 'admin']
-    ).order_by('-timestamp', '-pk')
+    ).order_by('-start_time', '-pk')
 
     return render(request, 'events/event_templates/events.html', {'events': events})
 

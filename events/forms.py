@@ -1,4 +1,5 @@
-from django.forms import ModelForm, TextInput, Textarea, ClearableFileInput, NumberInput
+from django.forms import ModelForm, TextInput, Textarea, ClearableFileInput, NumberInput, DateTimeInput
+from django.utils import timezone
 from .models import Event, TicketType
 
 input_class = 'input w-full my-2'
@@ -12,9 +13,9 @@ class EventForm(ModelForm):
             'title',
             'description',
             'location',
-            'image'
+            'image',
+            'start_time',
         ]
-
         widgets = {
             'title': TextInput(attrs={
                 'class': input_class,
@@ -30,15 +31,21 @@ class EventForm(ModelForm):
             }),
             'image': ClearableFileInput(attrs={
                 'class': "file-input file-input-bordered my-2 h-fit w-full"
-            })
+            }),
+            'start_time': DateTimeInput(
+                attrs={
+                    'class': input_class,
+                    'type': 'datetime-local',
+                },
+                format='%Y-%m-%dT%H:%M'
+            ),
         }
 
 
 class TicketTypeForm(ModelForm):
     class Meta:
         model = TicketType
-        fields = ['name', 'description', 'price',
-                  'quantity_available']
+        fields = ['name', 'description', 'price', 'quantity_available']
         widgets = {
             'name': TextInput(attrs={
                 'class': input_class,
@@ -50,12 +57,12 @@ class TicketTypeForm(ModelForm):
             }),
             'price': NumberInput(attrs={
                 'class': input_class,
-                'placeholder': '$9.99',
-                'steps': '0.01'
+                'placeholder': '9.99',
+                'step': '0.01'   # fixed
             }),
             'quantity_available': NumberInput(attrs={
                 'class': input_class,
                 'placeholder': '100',
-                'steps': '0.01'
-            }),
+                'step': '1'      # fixed
+            })
         }

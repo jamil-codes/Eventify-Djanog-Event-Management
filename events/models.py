@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from datetime import datetime
 
 User = settings.AUTH_USER_MODEL
 
@@ -7,7 +8,7 @@ User = settings.AUTH_USER_MODEL
 class Event(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    start_time = models.DateTimeField(default=datetime.now)
     location = models.TextField()
     image = models.ImageField(upload_to='events/')
     organizer = models.ForeignKey(
