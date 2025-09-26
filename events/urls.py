@@ -8,6 +8,8 @@ urlpatterns = [
     path('<int:pk>/', event_views.event_detail, name='event_detail'),
     path('<int:pk>/edit/', event_views.edit_event, name='edit_event'),
     path('new/', event_views.add_event, name='add_event'),
+    path('<int:event_pk>/delete-event/',
+         event_views.delete_event, name='delete_event'),
 
     # ----------------------  Ticket Views  ----------------------
     path('<int:event_pk>/add-ticket-type/',

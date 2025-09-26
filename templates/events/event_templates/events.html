@@ -1,14 +1,22 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Events - Eventify
+  {% if mine %}
+    My Events
+  {% else %}
+    Events
+  {% endif %}- Eventify
 {% endblock %}
 
 {% block body %}
   <div class="mx-auto max-w-[1250px] w-[95%]">
     <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mt-10 mb-12 text-center tracking-wide">
-      Upcoming Events
-      {% if request.user.is_authenticated and request.user.role in 'organizer admin' %}
+      {% if mine %}
+        My Events
+      {% else %}
+        Upcoming Events
+      {% endif %}
+      {% if request.user.is_authenticated and request.user.role == 'organizer' or request.user.role == 'admin' %}
         <a href="{% url 'events:add_event' %}" class="ml-4 btn btn-primary btn-sm align-middle">+ Create Event</a>
       {% endif %}
     </h1>
@@ -28,9 +36,7 @@
         {% endif %}
         <div class="card-body flex flex-col">
           <!-- Title -->
-          <a href="{% url 'events:event_detail' event.pk %}">
-            <h2 class="card-title text-xl font-bold line-clamp-1">{{ event.title }}</h2>
-          </a>
+          <a href="{% url 'events:event_detail' event.pk %}"><h2 class="card-title text-xl font-bold line-clamp-1">{{ event.title }}</h2></a>
 
           <!-- Description -->
           <p class="text-sm text-base-content/70 line-clamp-3">{{ event.description }}</p>
@@ -70,19 +76,19 @@
   {% if events.has_other_pages %}
     <div class="flex justify-center items-center gap-2 mt-10">
       {% if events.has_previous %}
-        <a href="?page={{ events.previous_page_number }}" class="btn btn-sm">« Prev</a>
+        <a href="?{% if mine %}mine=1&{% endif %}page={{ events.previous_page_number }}" class="btn btn-sm">« Prev</a>
       {% endif %}
 
       {% for num in events.paginator.page_range %}
         {% if events.number == num %}
           <span class="btn btn-sm btn-primary">{{ num }}</span>
         {% elif num > events.number|add:'-3' and num < events.number|add:'3' %}
-          <a href="?page={{ num }}" class="btn btn-sm">{{ num }}</a>
+          <a href="?{% if mine %}mine=1&{% endif %}page={{ num }}" class="btn btn-sm">{{ num }}</a>
         {% endif %}
       {% endfor %}
 
       {% if events.has_next %}
-        <a href="?page={{ events.next_page_number }}" class="btn btn-sm">Next »</a>
+        <a href="?{% if mine %}mine=1&{% endif %}page={{ events.next_page_number }}" class="btn btn-sm">Next »</a>
       {% endif %}
     </div>
   {% endif %}

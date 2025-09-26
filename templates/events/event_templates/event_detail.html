@@ -19,6 +19,7 @@
       {% if can_add_ticket %}
         <div class="flex gap-2">
           <a href="{% url 'events:edit_event' event.pk %}" class="btn btn-primary btn-sm">Edit Event</a>
+          <a href="{% url 'events:delete_event' event.pk %}" class="btn btn-error btn-sm">Delete Event</a>
           <a href="{% url 'events:add_ticket_type' event.pk %}" class="btn btn-secondary btn-sm">Add Ticket Type</a>
         </div>
       {% endif %}
