@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load thumbnail %}
 
 {% block title %}
   {% if mine %}
@@ -30,7 +31,9 @@
         {% if event.image %}
           <a href="{% url 'events:event_detail' event.pk %}">
             <figure class="aspect-[16/9] overflow-hidden">
-              <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-full object-cover hover:scale-105 transition duration-500" />
+              {% thumbnail event.image '400x226' crop='center' as thumb %}
+              <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ event.title }}" class="w-full h-full object-cover hover:scale-105 transition duration-500" />
+              {% endthumbnail %}
             </figure>
           </a>
         {% endif %}
@@ -56,7 +59,9 @@
             {% if event.organizer.profile_pic %}
               <div class="avatar">
                 <div class="w-10 h-10 rounded-full">
-                  <img src="{{ event.organizer.profile_pic.url }}" alt="{{ event.organizer.name }}" />
+                  {% thumbnail event.organizer.profile_pic '40x40' crop='center' as thumb %}
+                  <img src="{{ thumb.url }}" alt="{{ event.organizer.name }}" width="{{ thumb.width }}" height="{{ thumb.height }}" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" />
+                  {% endthumbnail %}
                 </div>
               </div>
             {% endif %}

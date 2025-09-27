@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'events',
+    "sorl.thumbnail",
     'authentication',
     'django.contrib.admin',
     'django.contrib.auth',

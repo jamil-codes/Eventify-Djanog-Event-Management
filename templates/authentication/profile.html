@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static thumbnail %}
 
 {% block title %}
   {{ user.name }} ({{ user.username }}) - Eventify
@@ -13,7 +13,9 @@
       <div class="relative">
         <div class="w-44 h-44 overflow-hidden rounded-full aspect-square border-4 border-primary shadow-lg">
           {% if user.profile_pic %}
-            <img src="{{ user.profile_pic.url }}" alt="{{ user.name }}" class="aspect-square w-full h-full object-cover" />
+            {% thumbnail user.profile_pic '176x176' crop='center' as thumb %}
+            <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ user.name }}" class="aspect-square w-full h-full object-cover" />
+            {% endthumbnail %}
           {% else %}
             <img src="{% static 'images/default-profile.webp' %}" alt="Default profile" class="aspect-square w-full h-full object-cover" />
           {% endif %}

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load thumbnail %}
 {% block title %}
   {{ event.title }} by {{ event.organizer.name }} - Eventify
 {% endblock %}
@@ -9,7 +9,9 @@
     <!-- Event Image -->
     {% if event.image %}
       <figure class="aspect-[16/9] overflow-hidden rounded-xl shadow-md mb-8">
-        <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-full object-cover" />
+        {% thumbnail event.image '1200x675' crop='center' as thumb %}
+        <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ event.title }}" class="w-full h-full object-cover" />
+        {% endthumbnail %}
       </figure>
     {% endif %}
 

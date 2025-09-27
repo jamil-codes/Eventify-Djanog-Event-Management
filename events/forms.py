@@ -1,6 +1,7 @@
 from django.forms import ModelForm, TextInput, Textarea, ClearableFileInput, NumberInput, DateTimeInput
-from django.utils import timezone
+
 from .models import Event, TicketType
+
 
 input_class = 'input w-full my-2'
 textarea_class = 'textarea-custom w-full my-2'
@@ -34,7 +35,7 @@ class EventForm(ModelForm):
             }),
             'start_time': DateTimeInput(
                 attrs={
-                    'class': input_class,
+                    'class': f'{input_class}',
                     'type': 'datetime-local',
                 },
                 format='%Y-%m-%dT%H:%M'
