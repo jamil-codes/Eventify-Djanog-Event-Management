@@ -53,7 +53,7 @@ def add_event(request):
             event.organizer = request.user
             event.save()
             messages.success(request, 'Event created successfully!')
-            return redirect('events:events')
+            return redirect('events:event_detail', event.pk)
         else:
             messages.error(request, 'Please correct the errors below.')
     else:

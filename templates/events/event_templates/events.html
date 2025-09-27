@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load thumbnail %}
+{% load static thumbnail %}
 
 {% block title %}
   {% if mine %}
@@ -56,17 +56,26 @@
 
           <!-- Organizer -->
           <a href="{% url 'authentication:profile' event.organizer.username %}" class="flex items-center gap-3 mt-auto pt-4 border-t border-base-200 hover:bg-base-200/40 transition rounded-md p-2 -m-2">
-            {% if event.organizer.profile_pic %}
-              <div class="avatar">
-                <div class="w-10 h-10 rounded-full">
+            <div class="avatar">
+              <div class="w-10 h-10 rounded-full">
+                {% if event.organizer.profile_pic %}
                   {% thumbnail event.organizer.profile_pic '40x40' crop='center' as thumb %}
                   <img src="{{ thumb.url }}" alt="{{ event.organizer.name }}" width="{{ thumb.width }}" height="{{ thumb.height }}" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" />
                   {% endthumbnail %}
-                </div>
+                {% else %}
+                  <img src="{% static 'images/default-profile.webp' %}" alt="Default profile" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" />
+                {% endif %}
               </div>
-            {% endif %}
+            </div>
             <div>
-              <p class="text-sm font-medium">{{ event.organizer.name }}</p>
+              {% if event.organizer == request.user %}
+                <p class="text-sm font-bold text-primary flex items-center gap-2">
+                  <span class="badge badge-sm badge-primary">Your Event</span>
+                  {{ event.organizer.name }}
+                </p>
+              {% else %}
+                <p class="text-sm font-medium text-base-content">{{ event.organizer.name }}</p>
+              {% endif %}
               <p class="text-xs text-base-content/70">{{ event.organizer.tagline|default:'Organizer' }}</p>
             </div>
           </a>

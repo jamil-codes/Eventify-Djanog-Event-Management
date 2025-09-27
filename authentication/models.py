@@ -1,7 +1,7 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
-from PIL import Image
 
 
 class User(AbstractUser):
@@ -10,6 +10,11 @@ class User(AbstractUser):
         ('organizer', 'Organizer'),
         ('attendee', 'Attendee'),
     ]
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     name = models.CharField(_("Full Name"), max_length=300, blank=False)
     email = models.EmailField(_("Email address"), unique=True)

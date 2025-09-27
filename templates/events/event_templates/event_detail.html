@@ -10,16 +10,16 @@
     {% if event.image %}
       <figure class="aspect-[16/9] overflow-hidden rounded-xl shadow-md mb-8">
         {% thumbnail event.image '1200x675' crop='center' as thumb %}
-        <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ event.title }}" class="w-full h-full object-cover" />
+        <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ event.title }}" class="object-cover w-full h-full" />
         {% endthumbnail %}
       </figure>
     {% endif %}
 
     <!-- Title + Organizer Controls -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight tracking-wide">{{ event.title }}</h1>
+    <div class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+      <h1 class="text-4xl font-extrabold leading-tight tracking-wide md:text-5xl">{{ event.title }}</h1>
       {% if can_add_ticket %}
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <a href="{% url 'events:edit_event' event.pk %}" class="btn btn-primary btn-sm">Edit Event</a>
           <a href="{% url 'events:delete_event' event.pk %}" class="btn btn-error btn-sm">Delete Event</a>
           <a href="{% url 'events:add_ticket_type' event.pk %}" class="btn btn-secondary btn-sm">Add Ticket Type</a>
@@ -28,7 +28,7 @@
     </div>
 
     <!-- Event Info -->
-    <div class="text-lg space-y-4 mb-8">
+    <div class="mb-8 space-y-4 text-lg">
       <p class="flex items-center gap-2">
         <span class="font-medium">📍 Location:</span> {{ event.location }}
       </p>
@@ -38,13 +38,13 @@
     </div>
 
     <!-- Description -->
-    <div class="prose max-w-none mb-10">
+    <div class="mb-10 prose max-w-none">
       <p>{{ event.description|linebreaks }}</p>
     </div>
 
     <!-- Organizer Section -->
-    <div class="border-t border-base-200 pt-6 flex items-center gap-4">
-      <a href="{% url 'authentication:profile' event.organizer.username %}" class="flex items-center gap-3 hover:bg-base-200/40 transition rounded-md p-2 -m-2">
+    <div class="flex items-center gap-4 pt-6 border-t border-base-200">
+      <a href="{% url 'authentication:profile' event.organizer.username %}" class="flex items-center gap-3 p-2 -m-2 transition rounded-md hover:bg-base-200/40">
         {% if event.organizer.profile_pic %}
           <div class="avatar">
             <div class="w-12 h-12 rounded-full">
@@ -63,7 +63,7 @@
 
     <!-- Ticket Types -->
     {% if ticket_types %}
-      <div class="bg-base-100 pb-16 px-4 w-full mx-auto mt-12">
+      <div class="w-full px-4 pb-16 mx-auto mt-12 bg-base-100">
         <div class="flex items-center justify-between mb-12">
           <h2 class="text-3xl font-bold text-center">Available Tickets</h2>
           {% if can_add_ticket %}
@@ -74,31 +74,44 @@
         <div class="mx-auto w-full grid gap-6 justify-center items-start place-items-center grid-cols-[repeat(auto-fit,minmax(280px,max-content))]">
           {% for ticket_type in ticket_types %}
             <!-- Card -->
-            <div class="card bg-base-200 shadow-md border border-base-300 hover:shadow-xl transition-transform duration-300 hover:-translate-y-2 w-full max-w-sm h-full flex flex-col">
-              <div class="card-body text-center flex flex-col flex-1">
-                <h2 class="uppercase text-sm font-medium tracking-widest text-primary">{{ ticket_type.name }}</h2>
-                <h1 class="text-4xl font-bold pb-4 mb-4 border-b border-base-300">${{ ticket_type.price }}</h1>
-                <p class="text-base mb-4 flex-1">{{ ticket_type.description|default:'No description provided.' }}</p>
-                <p class="text-sm mb-6">
+            <div class="flex flex-col w-full h-full max-w-sm transition-transform duration-300 border shadow-md card bg-base-200 border-base-300 hover:shadow-xl hover:-translate-y-2">
+              <div class="flex flex-col flex-1 text-center card-body">
+                <h2 class="text-sm font-medium tracking-widest uppercase text-primary">{{ ticket_type.name }}</h2>
+                <h1 class="pb-4 mb-4 text-4xl font-bold border-b border-base-300">${{ ticket_type.price }}</h1>
+                <p class="flex-1 mb-4 text-base">{{ ticket_type.description|default:'No description provided.' }}</p>
+                <p class="mb-6 text-sm">
                   {% if ticket_type.quantity_available == 0 %}
-                    <span class="text-error font-semibold">Sold Out</span>
+                    <span class="font-semibold text-error">Sold Out</span>
                   {% elif ticket_type.quantity_available < 10 %}
-                    <span class="text-warning font-semibold">Only {{ ticket_type.quantity_available }} left — hurry!</span>
+                    <span class="font-semibold text-warning">Only {{ ticket_type.quantity_available }} left — hurry!</span>
                   {% else %}
                     <span class="text-success">{{ ticket_type.quantity_available }} tickets available</span>
                   {% endif %}
                 </p>
 
-                <div class="card-actions mt-auto w-full flex flex-col gap-2">
+                <div class="flex flex-col w-full gap-2 mt-auto card-actions">
                   <!-- Buyer Buttons -->
                   {% if ticket_type.quantity_available > 0 %}
-                    <a href="" class="btn btn-success w-full">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>Buy Now
-                    </a>
+                    {% if request.user.is_authenticated and request.user == event.organizer %}
+                      <!-- Organizer button -->
+                      {% comment %} {% url 'claim_ticket' event.id ticket_type.id %} {% endcomment %}
+                      <a href="" class="w-full btn btn-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>Claim Ticket
+                      </a>
+                    {% else %}
+                      <!-- Normal user button -->
+                      {% comment %} {% url 'buy_ticket' event.id ticket_type.id %} {% endcomment %}
+                      <a href="" class="w-full btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>Buy Now
+                      </a>
+                    {% endif %}
                   {% else %}
-                    <button class="btn btn-disabled w-full">
+                    <!-- Sold out button -->
+                    <button class="w-full btn btn-disabled">
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path d="M6 18L18 6M6 6l12 12" />
                       </svg>Sold Out
@@ -107,13 +120,13 @@
 
                   <!-- Owner Controls -->
                   {% if can_add_ticket %}
-                    <div class="flex gap-2 w-full mt-5">
-                      <a href="{% url 'events:edit_ticket_type' event.pk ticket_type.pk %}" class="btn btn-primary btn-sm w-1/2 flex items-center justify-center gap-1">
+                    <div class="flex w-full gap-2 mt-5">
+                      <a href="{% url 'events:edit_ticket_type' event.pk ticket_type.pk %}" class="flex items-center justify-center w-1/2 gap-1 btn btn-primary btn-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path d="M15.232 5.232l3.536 3.536M9 11l3 3L20.485 8.515a2.121 2.121 0 0 0-3-3L9 11zm-4 9h16" />
                         </svg>Edit
                       </a>
-                      <a href="{% url 'events:delete_ticket_type' event.pk ticket_type.pk %}" class="btn btn-error btn-sm w-1/2 flex items-center justify-center gap-1">
+                      <a href="{% url 'events:delete_ticket_type' event.pk ticket_type.pk %}" class="flex items-center justify-center w-1/2 gap-1 btn btn-error btn-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path d="M6 18L18 6M6 6l12 12" />
                         </svg>Delete
@@ -129,7 +142,7 @@
     {% else %}
       <p class="mt-10 text-center text-base-content/70">No tickets available for this event.</p>
       {% if can_add_ticket %}
-        <div class="text-center mt-6">
+        <div class="mt-6 text-center">
           <a href="{% url 'events:add_ticket_type' event.pk %}" class="btn btn-secondary">+ Add Ticket Type</a>
         </div>
       {% endif %}
