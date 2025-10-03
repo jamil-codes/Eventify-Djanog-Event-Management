@@ -1,14 +1,16 @@
 {% extends 'base.html' %}
-{% load thumbnail %}
+{% load static thumbnail tz %}
+
 {% block title %}
   {{ event.title }} by {{ event.organizer.name }} - Eventify
 {% endblock %}
 
 {% block body %}
   <div class="mx-auto max-w-[1200px] w-[95%] my-12">
+
     <!-- Event Image -->
     {% if event.image %}
-      <figure class="aspect-[16/9] overflow-hidden rounded-xl shadow-md mb-8">
+      <figure class="aspect-[16/9] overflow-hidden rounded-xl shadow-lg mb-10">
         {% thumbnail event.image '1200x675' crop='center' as thumb %}
         <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ event.title }}" class="object-cover w-full h-full" />
         {% endthumbnail %}
@@ -16,8 +18,9 @@
     {% endif %}
 
     <!-- Title + Organizer Controls -->
-    <div class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
-      <h1 class="text-4xl font-extrabold leading-tight tracking-wide md:text-5xl">{{ event.title }}</h1>
+    <div class="flex flex-col gap-4 mb-8 md:flex-row md:items-center md:justify-between">
+      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight tracking-wide">{{ event.title }}</h1>
+
       {% if can_add_ticket %}
         <div class="flex flex-wrap gap-2">
           <a href="{% url 'events:edit_event' event.pk %}" class="btn btn-primary btn-sm">Edit Event</a>
@@ -28,109 +31,101 @@
     </div>
 
     <!-- Event Info -->
-    <div class="mb-8 space-y-4 text-lg">
+    <div class="mb-10 text-lg space-y-3">
       <p class="flex items-center gap-2">
         <span class="font-medium">📍 Location:</span> {{ event.location }}
       </p>
-      <p class="flex items-center gap-2">
-        <span class="font-medium">🗓 Date & Time:</span> {{ event.start_time|date:'M d, Y · H:i' }}
-      </p>
+      <div>
+        <p class="flex items-center gap-2">
+          <span class="font-medium">🗓 Date & Time:</span>
+          {% timezone event.organizer.timezone %}
+            {{ event.start_time|date:'M d, Y · H:i' }}
+          {% endtimezone %}
+          <span class="text-sm text-base-content/70">({{ event.organizer.timezone }})</span>
+        </p>
+
+        {% if request.user.is_authenticated and request.user.timezone != event.organizer.timezone %}
+          <p class="pl-6 text-sm text-base-content/60 mt-1">
+            Your local:
+            {% timezone request.user.timezone %}
+              {{ event.start_time|date:'M d, Y · H:i' }}
+            {% endtimezone %}
+            <span class="text-xs text-base-content/50">({{ request.user.timezone }})</span>
+          </p>
+        {% endif %}
+      </div>
     </div>
 
     <!-- Description -->
-    <div class="mb-10 prose max-w-none">
-      <p>{{ event.description|linebreaks }}</p>
+    <div class="prose max-w-none mb-14">
+      {{ event.description|linebreaks }}
     </div>
 
-    <!-- Organizer Section -->
+    <!-- Organizer -->
     <div class="flex items-center gap-4 pt-6 border-t border-base-200">
-      <a href="{% url 'authentication:profile' event.organizer.username %}" class="flex items-center gap-3 p-2 -m-2 transition rounded-md hover:bg-base-200/40">
-        {% if event.organizer.profile_pic %}
-          <div class="avatar">
-            <div class="w-12 h-12 rounded-full">
-              <img src="{{ event.organizer.profile_pic.url }}" alt="{{ event.organizer.name }}" />
-            </div>
+      <a href="{% url 'authentication:profile' event.organizer.username %}" class="flex items-center gap-3 p-2 -m-2 rounded-md transition hover:bg-base-200/40">
+        <div class="avatar">
+          <div class="w-12 h-12 rounded-full">
+            {% if event.organizer.profile_pic %}
+              {% thumbnail event.organizer.profile_pic '48x48' crop='center' as thumb %}
+                <img src="{{ thumb.url }}" alt="{{ event.organizer.name }}" />
+              {% endthumbnail %}
+            {% else %}
+              <img src="{% static 'images/default-profile.webp' %}" alt="Default profile" />
+            {% endif %}
           </div>
-        {% endif %}
+        </div>
         <div>
-          <p class="text-base font-medium">{{ event.organizer.name }}</p>
+          <p class="text-base font-semibold">{{ event.organizer.name }}</p>
           <p class="text-sm text-base-content/70">{{ event.organizer.tagline|default:'Organizer' }}</p>
         </div>
       </a>
     </div>
 
+    <!-- Tickets -->
     <div class="border-t border-base-300 my-14"></div>
 
-    <!-- Ticket Types -->
     {% if ticket_types %}
-      <div class="w-full px-4 pb-16 mx-auto mt-12 bg-base-100">
-        <div class="flex items-center justify-between mb-12">
-          <h2 class="text-3xl font-bold text-center">Available Tickets</h2>
-          {% if can_add_ticket %}
-            <a href="{% url 'events:add_ticket_type' event.pk %}" class="btn btn-outline btn-sm">+ Add Ticket Type</a>
-          {% endif %}
-        </div>
+      <div class="w-full mx-auto mt-12">
+        <h2 class="text-3xl font-bold mb-10 text-center">Available Tickets</h2>
 
-        <div class="mx-auto w-full grid gap-6 justify-center items-start place-items-center grid-cols-[repeat(auto-fit,minmax(280px,max-content))]">
+        <div class="grid gap-8 justify-center items-start grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
           {% for ticket_type in ticket_types %}
-            <!-- Card -->
-            <div class="flex flex-col w-full h-full max-w-sm transition-transform duration-300 border shadow-md card bg-base-200 border-base-300 hover:shadow-xl hover:-translate-y-2">
-              <div class="flex flex-col flex-1 text-center card-body">
-                <h2 class="text-sm font-medium tracking-widest uppercase text-primary">{{ ticket_type.name }}</h2>
-                <h1 class="pb-4 mb-4 text-4xl font-bold border-b border-base-300">${{ ticket_type.price }}</h1>
-                <p class="flex-1 mb-4 text-base">{{ ticket_type.description|default:'No description provided.' }}</p>
-                <p class="mb-6 text-sm">
+            <div class="card bg-base-200 border border-base-300 shadow-md hover:shadow-xl transition transform hover:-translate-y-1">
+              <div class="card-body flex flex-col text-center">
+                <h2 class="text-sm font-medium uppercase tracking-wide text-primary">{{ ticket_type.name }}</h2>
+                <h1 class="text-4xl font-bold my-4">${{ ticket_type.price }}</h1>
+                <p class="text-base flex-1">{{ ticket_type.description|default:'No description provided.' }}</p>
+
+                <p class="mt-4 text-sm">
                   {% if ticket_type.quantity_available == 0 %}
                     <span class="font-semibold text-error">Sold Out</span>
                   {% elif ticket_type.quantity_available < 10 %}
-                    <span class="font-semibold text-warning">Only {{ ticket_type.quantity_available }} left — hurry!</span>
+                    <span class="font-semibold text-warning">Only {{ ticket_type.quantity_available }} left!</span>
                   {% else %}
-                    <span class="text-success">{{ ticket_type.quantity_available }} tickets available</span>
+                    <span class="text-success">{{ ticket_type.quantity_available }} available</span>
                   {% endif %}
                 </p>
 
-                <div class="flex flex-col w-full gap-2 mt-auto card-actions">
-                  <!-- Buyer Buttons -->
+                <!-- Actions -->
+                <div class="mt-6 flex flex-col gap-2">
                   {% if ticket_type.quantity_available > 0 %}
-                    {% if request.user.is_authenticated and request.user == event.organizer %}
-                      <!-- Organizer button -->
-                      {% comment %} {% url 'claim_ticket' event.id ticket_type.id %} {% endcomment %}
-                      <a href="" class="w-full btn btn-warning">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>Claim Ticket
-                      </a>
-                    {% else %}
-                      <!-- Normal user button -->
-                      {% comment %} {% url 'buy_ticket' event.id ticket_type.id %} {% endcomment %}
-                      <a href="" class="w-full btn btn-success">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>Buy Now
-                      </a>
-                    {% endif %}
+                    <a href="{% url 'events:buy_ticket' event.pk ticket_type.pk %}"
+                       class="btn {% if request.user == event.organizer %}btn-warning{% else %}btn-success{% endif %} w-full">
+                      {% if request.user == event.organizer %}
+                        Claim Ticket
+                      {% else %}
+                        Buy Now
+                      {% endif %}
+                    </a>
                   {% else %}
-                    <!-- Sold out button -->
-                    <button class="w-full btn btn-disabled">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                      </svg>Sold Out
-                    </button>
+                    <button class="btn btn-disabled w-full">Sold Out</button>
                   {% endif %}
 
-                  <!-- Owner Controls -->
                   {% if can_add_ticket %}
-                    <div class="flex w-full gap-2 mt-5">
-                      <a href="{% url 'events:edit_ticket_type' event.pk ticket_type.pk %}" class="flex items-center justify-center w-1/2 gap-1 btn btn-primary btn-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M15.232 5.232l3.536 3.536M9 11l3 3L20.485 8.515a2.121 2.121 0 0 0-3-3L9 11zm-4 9h16" />
-                        </svg>Edit
-                      </a>
-                      <a href="{% url 'events:delete_ticket_type' event.pk ticket_type.pk %}" class="flex items-center justify-center w-1/2 gap-1 btn btn-error btn-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M6 18L18 6M6 6l12 12" />
-                        </svg>Delete
-                      </a>
+                    <div class="flex gap-2 mt-4">
+                      <a href="{% url 'events:edit_ticket_type' event.pk ticket_type.pk %}" class="btn btn-primary btn-sm flex-1">Edit</a>
+                      <a href="{% url 'events:delete_ticket_type' event.pk ticket_type.pk %}" class="btn btn-error btn-sm flex-1">Delete</a>
                     </div>
                   {% endif %}
                 </div>

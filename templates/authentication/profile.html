@@ -37,6 +37,12 @@
           <span class="font-semibold">Role:</span> {{ user.get_role_display }}
         </p>
 
+        {% if user.timezone %}
+          <p class="text-gray-600 text-lg">
+            <span class="font-semibold">Timezone:</span> {{ user.timezone }}
+          </p>
+        {% endif %}
+
         {% if user.tagline %}
           <p class="italic text-gray-500 text-lg">“{{ user.tagline }}”</p>
         {% endif %}

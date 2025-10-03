@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static thumbnail %}
+{% load static thumbnail tz %}
 
 {% block title %}
   {% if mine %}
@@ -17,7 +17,7 @@
       {% else %}
         Upcoming Events
       {% endif %}
-      {% if request.user.is_authenticated and request.user.role == 'organizer' or request.user.role == 'admin' %}
+      {% if request.user.is_authenticated and request.user.role in 'organizer admin' %}
         <a href="{% url 'events:add_event' %}" class="ml-4 btn btn-primary btn-sm align-middle">+ Create Event</a>
       {% endif %}
     </h1>
@@ -28,15 +28,17 @@
   <div class="mx-auto max-w-[1250px] w-[95%] min-h-[70dvh] grid gap-8 sm:grid-cols-2 lg:grid-cols-3 my-14">
     {% for event in events %}
       <div class="card bg-base-100 shadow-md hover:shadow-xl transition duration-300 border border-base-200">
+        <!-- Image -->
         {% if event.image %}
           <a href="{% url 'events:event_detail' event.pk %}">
             <figure class="aspect-[16/9] overflow-hidden">
               {% thumbnail event.image '400x226' crop='center' as thumb %}
-              <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ event.title }}" class="w-full h-full object-cover hover:scale-105 transition duration-500" />
+              <img src="{{ thumb.url }}" alt="{{ event.title }}" class="w-full h-full object-cover hover:scale-105 transition duration-500" />
               {% endthumbnail %}
             </figure>
           </a>
         {% endif %}
+
         <div class="card-body flex flex-col">
           <!-- Title -->
           <a href="{% url 'events:event_detail' event.pk %}"><h2 class="card-title text-xl font-bold line-clamp-1">{{ event.title }}</h2></a>
@@ -45,13 +47,33 @@
           <p class="text-sm text-base-content/70 line-clamp-3">{{ event.description }}</p>
 
           <!-- Event Info -->
-          <div class="mt-3 text-sm space-y-1">
-            <p class="flex items-center gap-2">
-              <span class="font-medium">📍</span> {{ event.location }}
+          <div class="mt-3 text-sm space-y-2">
+            <p class="flex flex-wrap items-center gap-2">
+              <span class="font-medium">📍</span>
+              <span class="break-words">{{ event.location }}</span>
             </p>
-            <p class="flex items-center gap-2">
-              <span class="font-medium">🗓</span> {{ event.start_time|date:'M d, Y · H:i' }}
-            </p>
+
+            <!-- Date / Time -->
+            <div class="flex flex-col space-y-1">
+              <p class="flex items-center gap-2">
+                <span class="font-medium">🗓</span>
+                <span>
+                  {% timezone event.organizer.timezone %}
+                  {{ event.start_time|date:'M d, Y · H:i' }}
+                  {% endtimezone %}
+                  <span class="text-xs text-base-content/70">({{ event.organizer.timezone }})</span>
+                </span>
+              </p>
+
+              {% if request.user.is_authenticated and request.user.timezone != event.organizer.timezone %}
+                <p class="text-xs my-1 text-base-content/60 pl-6">
+                  Your local:{% timezone request.user.timezone %}
+                  {{ event.start_time|date:'M d, Y · H:i' }}
+                  {% endtimezone %}
+                  <span class="text-[10px] text-base-content/50">({{ request.user.timezone }})</span>
+                </p>
+              {% endif %}
+            </div>
           </div>
 
           <!-- Organizer -->
@@ -60,10 +82,10 @@
               <div class="w-10 h-10 rounded-full">
                 {% if event.organizer.profile_pic %}
                   {% thumbnail event.organizer.profile_pic '40x40' crop='center' as thumb %}
-                  <img src="{{ thumb.url }}" alt="{{ event.organizer.name }}" width="{{ thumb.width }}" height="{{ thumb.height }}" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" />
+                  <img src="{{ thumb.url }}" alt="{{ event.organizer.name }}" />
                   {% endthumbnail %}
                 {% else %}
-                  <img src="{% static 'images/default-profile.webp' %}" alt="Default profile" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" />
+                  <img src="{% static 'images/default-profile.webp' %}" alt="Default profile" />
                 {% endif %}
               </div>
             </div>

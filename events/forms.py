@@ -46,7 +46,8 @@ class EventForm(ModelForm):
 class TicketTypeForm(ModelForm):
     class Meta:
         model = TicketType
-        fields = ['name', 'description', 'price', 'quantity_available']
+        fields = ['name', 'description', 'price',
+                  'quantity_available', 'max_per_user']
         widgets = {
             'name': TextInput(attrs={
                 'class': input_class,
@@ -65,5 +66,11 @@ class TicketTypeForm(ModelForm):
                 'class': input_class,
                 'placeholder': '100',
                 'step': '1'      # fixed
+            }),
+            'max_per_user': NumberInput(attrs={
+                'class': input_class,
+                'placeholder': '1',
+                'step': '1',
+                'min': '1'
             })
         }

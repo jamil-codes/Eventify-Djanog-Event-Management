@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load thumbnail static tz %}
+
+{% block title %}
+  Confirm Ticket Purchase - Eventify
+{% endblock %}
+
+{% block body %}
+  <div class="mx-auto max-w-[900px] w-full px-4 my-12 min-h-[70dvh]">
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-8 text-center">Confirm Your Ticket</h1>
+
+    <div class="bg-base-100 border border-base-200 shadow-lg rounded-xl overflow-hidden">
+      <div class="p-6 space-y-6">
+        <!-- Event Info -->
+        <div class="flex flex-col md:flex-row gap-4 md:gap-6 items-center">
+          {% if ticket.ticket_type.event.image %}
+            {% thumbnail ticket.ticket_type.event.image '250x250' crop='center' as thumb %}
+            <figure class="w-full max-w-[200px] md:max-w-[250px] h-auto rounded-xl overflow-hidden shadow-md flex-shrink-0">
+              <img src="{{ thumb.url }}" alt="{{ ticket.ticket_type.event.title }}" class="object-cover w-full h-full" loading="lazy" />
+            </figure>
+            {% endthumbnail %}
+          {% endif %}
+
+          <div class="flex-1 space-y-1 md:space-y-2">
+            <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">{{ ticket.ticket_type.event.title }}</h2>
+            <p class="text-sm text-base-content/70 flex flex-wrap items-center gap-1">
+              📅{% timezone ticket.ticket_type.event.organizer.timezone %}
+              {{ ticket.ticket_type.event.start_time|date:'l, F j, Y · h:i A' }}
+              {% endtimezone %}
+              <span class="text-xs text-base-content/50">({{ ticket.ticket_type.event.organizer.timezone }})</span>
+            </p>
+            <p class="text-sm text-base-content/70 flex items-center gap-1">📍 {{ ticket.ticket_type.event.location }}</p>
+          </div>
+        </div>
+
+        <!-- Ticket Summary Grid -->
+        <div class="bg-base-200 p-4 sm:p-6 rounded-xl shadow-inner grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div>
+            <p class="font-medium text-base-content/80">Ticket Type</p>
+            <p class="font-semibold text-lg">{{ ticket.ticket_type.name }}</p>
+          </div>
+          <div>
+            <p class="font-medium text-base-content/80">Ticket Code</p>
+            <p class="font-semibold text-lg">{{ ticket.ticket_code }}</p>
+          </div>
+          <div>
+            <p class="font-medium text-base-content/80">Attendee</p>
+            <p class="font-semibold text-lg">{{ ticket.attendee.get_full_name|default:ticket.attendee.username }}</p>
+          </div>
+          <div>
+            <p class="font-medium text-base-content/80">Status</p>
+            <p class="font-semibold text-lg">
+              {% if ticket.is_expired %}
+                <span class="text-error">Expired</span>
+              {% elif ticket.purchase_status == 'P' %}
+                <span class="text-warning">Reserved – Payment Pending</span>
+              {% elif ticket.purchase_status == 'A' %}
+                <span class="text-success">Paid & Confirmed</span>
+              {% elif ticket.purchase_status == 'FRE' %}
+                <span class="text-success">Free Ticket</span>
+              {% elif ticket.purchase_status == 'F' %}
+                <span class="text-error">Payment Failed</span>
+              {% elif ticket.purchase_status == 'R' %}
+                <span class="text-info">Refunded</span>
+              {% else %}
+                {{ ticket.get_purchase_status_display }}
+              {% endif %}
+            </p>
+          </div>
+          <div>
+            <p class="font-medium text-base-content/80">Price</p>
+            <p class="font-semibold text-lg">
+              {% if ticket.purchase_status == 'FRE' %}
+                <span class="text-success">Free</span>
+              {% else %}
+                <span class="text-primary">${{ ticket.ticket_type.price }}</span>
+              {% endif %}
+            </p>
+          </div>
+
+          {% if ticket.purchase_status == 'P' and not ticket.is_expired %}
+            <div class="col-span-1 sm:col-span-1 space-y-1">
+              <p class="font-medium text-base-content/80">Reserved until</p>
+              <p class="font-semibold text-lg">{{ ticket.reservation_expires_at|date:'M d, Y h:i A T' }}</p>
+            </div>
+            <div class="col-span-1 sm:col-span-1 space-y-1 text-left sm:text-right">
+              <p class="font-medium text-base-content/80">Time left</p>
+              <p id="countdown" class="text-warning font-bold text-xl sm:text-2xl">--:--</p>
+              <p class="text-xs text-base-content/60">Complete payment before time runs out</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Actions / Payment -->
+        <div class="pt-4 border-t border-base-200 space-y-3 text-center">
+          {% if ticket.is_expired %}
+            <div class="alert alert-error">⚠ This reservation expired. Please reserve again.</div>
+            <a href="{% url 'events:event_detail' ticket.ticket_type.event.pk %}" class="btn btn-primary w-full sm:w-auto">Reserve Again</a>
+          {% elif ticket.purchase_status == 'P' %}
+            <a href="{{ checkout_url }}" type="submit" class="btn btn-primary w-full">Proceed to Payment</a>
+
+            <a href="{% url 'events:event_detail' ticket.ticket_type.event.pk %}" class="text-sm link link-error mt-2 block">Cancel Reservation</a>
+          {% elif ticket.purchase_status == 'FRE' %}
+            <div class="alert alert-success">🎉 This ticket is free and confirmed!</div>
+            <a href="{% url 'events:event_detail' ticket.ticket_type.event.pk %}" class="btn btn-secondary w-full sm:w-auto">Back to Event</a>
+          {% elif ticket.purchase_status == 'A' %}
+            <div class="alert alert-success">✅ Your ticket is paid and confirmed!</div>
+            <a href="{% url 'events:event_detail' ticket.ticket_type.event.pk %}" class="btn btn-primary w-full sm:w-auto">Back to Event</a>
+          {% elif ticket.purchase_status == 'F' %}
+            <div class="alert alert-error">⚠ Payment failed. Please try again.</div>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary w-full">Retry Payment</button>
+            </form>
+          {% elif ticket.purchase_status == 'R' %}
+            <div class="alert alert-info">ℹ This ticket has been refunded.</div>
+          {% else %}
+            <div class="alert alert-info">Status: {{ ticket.get_purchase_status_display }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Countdown Timer Script -->
+        {% if ticket.purchase_status == 'P' and not ticket.is_expired and ticket.reservation_expires_at %}
+          <script>
+            ;(function () {
+              const expiresAt = new Date("{{ ticket.reservation_expires_at|date:'c' }}")
+              const countdownEl = document.getElementById('countdown')
+            
+              function fmt(n) {
+                return n < 10 ? '0' + n : n
+              }
+            
+              function tick() {
+                const now = new Date()
+                let diff = Math.floor((expiresAt - now) / 1000)
+                if (diff <= 0) {
+                  countdownEl.textContent = '00:00'
+                  setTimeout(() => location.reload(true), 1000)
+                  return
+                }
+                const mins = Math.floor(diff / 60)
+                const secs = diff % 60
+                countdownEl.textContent = fmt(mins) + ':' + fmt(secs)
+                if (diff <= 30) {
+                  countdownEl.classList.add('animate-pulse', 'text-error')
+                }
+              }
+            
+              tick()
+              setInterval(tick, 1000)
+            })()
+          </script>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

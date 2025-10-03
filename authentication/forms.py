@@ -1,6 +1,8 @@
+import pytz
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User
+
 
 input_class = 'input w-full my-2'
 
@@ -88,9 +90,19 @@ class UserLoginForm(AuthenticationForm):
 
 
 class ProfileEditForm(forms.ModelForm):
+    # Add timezone field
+    timezone = forms.ChoiceField(
+        choices=[(tz, tz) for tz in pytz.common_timezones],
+        widget=forms.Select(attrs={
+            'class': input_class,
+        }),
+        required=True,
+        label="Timezone"
+    )
+
     class Meta:
         model = User
-        fields = ['name', 'tagline', 'description', 'profile_pic']
+        fields = ['name', 'tagline', 'description', 'profile_pic', 'timezone']
 
         widgets = {
             'name': forms.TextInput(attrs={
@@ -102,9 +114,12 @@ class ProfileEditForm(forms.ModelForm):
                 'placeholder': "Short tagline"
             }),
             'description': forms.Textarea(attrs={
-                'class': 'textarea-custom w-full my-2 ',
+                'class': 'textarea-custom w-full my-2',
                 'placeholder': "Tell us about yourself..."
-
+            }),
+            'timezone': forms.Select(attrs={
+                'class': 'select',
+                'placeholder': "Tell us about yourself..."
             }),
             'profile_pic': forms.ClearableFileInput(attrs={
                 'class': "file-input file-input-bordered my-2 h-fit w-full"

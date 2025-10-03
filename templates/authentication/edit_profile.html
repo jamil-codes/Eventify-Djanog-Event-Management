@@ -38,6 +38,15 @@
         {% endif %}
       </div>
 
+      <!-- Timezone -->
+      <div class="form-control w-full">
+        <label class="label" for="{{ form.timezone.id_for_label }}"><span class="label-text font-semibold">Timezone:</span></label>
+        {{ form.timezone }}
+        {% if form.timezone.errors %}
+          <span class="text-error text-sm mt-1">{{ form.timezone.errors }}</span>
+        {% endif %}
+      </div>
+
       <!-- Profile Picture -->
       <div>
         <label for="{{ form.profile_pic.id_for_label }}" class="block mb-2">Profile Pic:</label>

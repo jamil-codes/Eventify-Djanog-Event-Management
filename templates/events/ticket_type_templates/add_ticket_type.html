@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Edit Ticket Type - Eventify
+  Add Ticket Type - Eventify
 {% endblock %}
 
 {% block body %}
   <div class="min-h-[75dvh] flex flex-col justify-center items-center max-w-[1000px] w-[95%] mx-auto">
-    <h1 class="text-4xl font-extrabold leading-none mt-8 mb-14 tracking-tight max-w-[60ch] mx-auto md:text-5xl lg:text-6xl">Edit New Event - Eventify</h1>
-    <form class="mb-5 flex flex-col justify-start items-start gap-4 w-full [&_>*]:w-full" action="{% url 'events:edit_ticket_type' event.pk ticket_type.pk %}" method="post" enctype="multipart/form-data">
+    <h1 class="text-4xl font-extrabold leading-none mt-8 mb-14 tracking-tight max-w-[60ch] mx-auto md:text-5xl lg:text-6xl">Add New Event - Eventify</h1>
+    <form class="mb-5 flex flex-col justify-start items-start gap-4 w-full [&_>*]:w-full" action="{% url 'events:add_ticket_type' event.pk %}" method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div>
@@ -38,9 +38,17 @@
           <div class="text-error">{{ form.quantity_available.errors }}</div>
         {% endif %}
       </div>
+      
+      <div>
+        <label for="id_max_per_user">Max Tickets Per User:</label>
+        {{ form.max_per_user }}
+        {% if form.max_per_user.errors %}
+          <div class="text-error">{{ form.max_per_user.errors }}</div>
+        {% endif %}
+      </div>
 
       <p>
-        <button type="submit" class="btn w-fit btn-primary">Save</button>
+        <button type="submit" class="btn w-fit btn-primary">Add</button>
         <a href="{% url 'events:event_detail' event.pk %}" class="btn w-fit mx-3">Cancel</a>
       </p>
     </form>
