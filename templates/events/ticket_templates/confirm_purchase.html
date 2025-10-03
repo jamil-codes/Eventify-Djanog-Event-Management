@@ -97,7 +97,9 @@
             <div class="alert alert-error">⚠ This reservation expired. Please reserve again.</div>
             <a href="{% url 'events:event_detail' ticket.ticket_type.event.pk %}" class="btn btn-primary w-full sm:w-auto">Reserve Again</a>
           {% elif ticket.purchase_status == 'P' %}
-            <a href="{{ checkout_url }}" type="submit" class="btn btn-primary w-full">Proceed to Payment</a>
+            {% if checkout_url %}
+              <a href="{{ checkout_url }}" type="submit" class="btn btn-primary w-full">Proceed to Payment</a>
+            {% endif %}
 
             <a href="{% url 'events:event_detail' ticket.ticket_type.event.pk %}" class="text-sm link link-error mt-2 block">Cancel Reservation</a>
           {% elif ticket.purchase_status == 'FRE' %}
