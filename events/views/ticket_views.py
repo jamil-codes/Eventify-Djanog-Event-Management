@@ -234,3 +234,32 @@ def cancel_ticket_purchase(request, event_pk, ticket_code):
             request, f"⚠ Payment was canceled. Your ticket {ticket.ticket_code} is still reserved.")
 
     return redirect("events:confirm_ticket_purchase", event_pk=event_pk, ticket_code=ticket_code)
+
+# ========================= Cancelled Reservation =========================
+
+
+@login_required
+def cancel_reservation(request, event_pk, ticket_code):
+    """
+    Cancel a user's ticket reservation.
+    - Paid or free tickets cannot be canceled.
+    - Pending tickets are canceled and user gets a confirmation message.
+    - Redirects user back to event details.
+    """
+    ticket = get_object_or_404(
+        Ticket, ticket_code=ticket_code, attendee=request.user)
+
+    event = get_object_or_404(Event, pk=event_pk)
+
+    if ticket.purchase_status in [PurchaseStatus.PAID, PurchaseStatus.FREE]:
+        messages.warning(
+            request, f"❌ You cannot cancel a ticket that is already {ticket.get_purchase_status_display()}.")
+    elif ticket.purchase_status == PurchaseStatus.PENDING:
+        ticket.delete()
+        messages.success(
+            request, f"✅ Your reservation for ticket {ticket.ticket_code} has been successfully canceled.")
+    else:
+        messages.info(
+            request, f"ℹ Ticket {ticket.ticket_code} has an unexpected status: {ticket.get_purchase_status_display()}.")
+
+    return redirect("events:event_detail", pk=event.pk)

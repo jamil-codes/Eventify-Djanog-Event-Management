@@ -20,10 +20,12 @@ urlpatterns = [
          ticket_type_views.delete_ticket_type, name='delete_ticket_type'),
 
     # -------------------------  Ticket Views  -----------------------
-    path('<uuid:event_pk>/<uuid:ticket_type_pk>/purchase-ticket/',
+    path('<uuid:event_pk>/purchase-ticket/<uuid:ticket_type_pk>/',
          ticket_views.buy_ticket, name='buy_ticket'),
     path('<uuid:event_pk>/confirm-ticket-purchase/<str:ticket_code>/',
          ticket_views.confirm_purchase, name='confirm_ticket_purchase'),
+    path('<uuid:event_pk>/cancel-reservation/<str:ticket_code>/',
+         ticket_views.cancel_reservation, name='cancel_reservation'),
 
     path('<uuid:event_pk>/ticket-purchase/success/<str:ticket_code>/',
          ticket_views.success_ticket_purchase, name='success_ticket_purchase'),

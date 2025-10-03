@@ -16,6 +16,9 @@ def sync_ticket_payment(ticket: Ticket) -> bool:
     If so, update the DB and return True.
     Returns False if not yet paid.
     """
+    if not ticket:
+        return False
+
     if not ticket.stripe_session_id:
         return False
 
