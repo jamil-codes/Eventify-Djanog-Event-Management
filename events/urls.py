@@ -26,7 +26,7 @@ urlpatterns = [
          ticket_views.confirm_purchase, name='confirm_ticket_purchase'),
 
     path('<uuid:event_pk>/ticket-purchase/success/<str:ticket_code>/',
-         ticket_views.confirm_purchase, name='success_ticket_purchase'),
+         ticket_views.success_ticket_purchase, name='success_ticket_purchase'),
     path('<uuid:event_pk>/ticket-purchase/cancel/<str:ticket_code>/',
-         ticket_views.confirm_purchase, name='cancel_ticket_purchase')
+         ticket_views.cancel_ticket_purchase, name='cancel_ticket_purchase')
 ]

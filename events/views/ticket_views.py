@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 from django.shortcuts import get_object_or_404, redirect, render
 from ..models import Event, TicketType, Ticket, PurchaseStatus
 from django.contrib.auth.decorators import login_required
-from ..utils import get_stripe_checkout_url
+from ..utils import get_stripe_checkout_url, sync_ticket_payment
 from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse
@@ -71,6 +71,10 @@ def buy_ticket(request, event_pk, ticket_type_pk):
         purchase_status=PurchaseStatus.PENDING
     ).first()
 
+    if sync_ticket_payment(pending_ticket):
+        messages.success(request, "Ticket already paid.")
+        return redirect("events:event_detail", pk=event.pk)
+
     if pending_ticket:
         if pending_ticket.is_expired:
             pending_ticket.delete()
@@ -118,6 +122,8 @@ def confirm_purchase(request, event_pk, ticket_code):
     ticket = get_object_or_404(
         Ticket, ticket_code=ticket_code, attendee=request.user)
 
+    sync_ticket_payment(ticket)
+
     # Already paid → redirect
     if ticket.purchase_status == PurchaseStatus.PAID:
         messages.success(request, "This ticket is already paid and confirmed.")
@@ -154,7 +160,6 @@ def confirm_purchase(request, event_pk, ticket_code):
 
     success_url = urljoin(absolute_url, success_path)
     cancel_url = urljoin(absolute_url, cancel_path)
-
     checkout_url = get_stripe_checkout_url(ticket, success_url, cancel_url)
 
     return render(request, "events/ticket_templates/confirm_purchase.html", {

@@ -37,7 +37,7 @@ class TicketAdmin(admin.ModelAdmin):
     search_fields = ["ticket_code", "attendee__username",
                      "ticket_type__name", "ticket_type__event__title"]
     readonly_fields = ["ticket_code", "purchase_date",
-                       "stripe_price", "is_expired", "reservation_seconds_left"]
+                       "stripe_price", "is_expired", "reservation_seconds_left", "stripe_product_id", "stripe_price_id", "stripe_session_id"]
 
     def event_title(self, obj):
         return obj.ticket_type.event.title
