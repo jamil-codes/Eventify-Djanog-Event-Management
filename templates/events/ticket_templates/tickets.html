@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load thumbnail tz %}
+
+{% block body %}
+<div class="min-h-[70dvh] bg-base-200 flex flex-col items-center px-4 py-10">
+  <div class="max-w-5xl w-full">
+    <h1 class="text-4xl font-bold text-center mb-10">🎟 My Tickets</h1>
+
+    {% if tickets %}
+      <div class="grid gap-6">
+        {% for ticket in tickets %}
+          {% with idx=forloop.counter %}
+            {% if ticket.purchase_status in 'A FRE P' %}
+              {% if ticket.purchase_status == 'P' %}
+                <a href="{% url 'events:confirm_ticket_purchase' ticket.ticket_type.event.pk ticket.ticket_code %}"
+                   class="group block bg-base-100 border border-base-300 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden">
+              {% else %}
+                <a href="{% url 'events:event_detail' ticket.ticket_type.event.pk %}"
+                   class="group block bg-base-100 border border-base-300 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden">
+              {% endif %}
+            {% else %}
+              <div class="block bg-base-100 border border-base-300 rounded-2xl shadow-sm opacity-60 cursor-not-allowed overflow-hidden">
+            {% endif %}
+
+              <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+                <!-- Left: Event Info -->
+                <div class="flex items-center gap-5 w-full sm:w-auto">
+                  {% thumbnail ticket.ticket_type.event.image '100x100' crop='center' as thumb %}
+                    <img src="{{ thumb.url }}" alt="{{ ticket.ticket_type.event.title }}"
+                         class="w-24 h-24 rounded-xl border border-base-300 object-cover flex-shrink-0" />
+                  {% endthumbnail %}
+
+                  <div class="flex flex-col gap-1">
+                    <h2 class="text-lg sm:text-xl font-semibold leading-tight">{{ ticket.ticket_type.event.title }}</h2>
+                    <p class="text-sm text-base-content/70">Type: <span class="font-medium">{{ ticket.ticket_type.name }}</span></p>
+                    <p class="text-sm text-base-content/70">Code: <span class="font-mono">{{ ticket.ticket_code }}</span></p>
+
+                    <!-- Event Time -->
+                    <div class="mt-2 space-y-0.5">
+                      <p class="text-xs flex items-center gap-1">
+                        <span>🗓</span>
+                        {% timezone ticket.ticket_type.event.organizer.timezone %}
+                          {{ ticket.ticket_type.event.start_time|date:'M d, Y · H:i' }}
+                        {% endtimezone %}
+                        <span class="text-[10px] text-base-content/60">({{ ticket.ticket_type.event.organizer.timezone }})</span>
+                      </p>
+                      {% if request.user.is_authenticated and request.user.timezone != ticket.ticket_type.event.organizer.timezone %}
+                        <p class="text-[11px] text-base-content/60 pl-5">
+                          Local:
+                          {% timezone request.user.timezone %}
+                            {{ ticket.ticket_type.event.start_time|date:'M d, Y · H:i' }}
+                          {% endtimezone %}
+                          <span class="text-[10px] text-base-content/50">
+                            ({{ request.user.timezone }})
+                          </span>
+                        </p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right: Ticket Status -->
+                <div class="text-right flex flex-col gap-2 sm:items-end">
+                  {% if ticket.is_expired %}
+                    <span class="badge badge-error py-2 px-3 gap-1 text-sm">⏳ Expired</span>
+                  {% elif ticket.purchase_status == 'A' %}
+                    <span class="badge badge-success py-2 px-3 gap-1 text-sm">✅ Paid</span>
+                  {% elif ticket.purchase_status == 'P' %}
+                    <span class="badge badge-warning py-2 px-3 gap-1 text-sm">
+                      ⌛ Pending (<span id="countdown-{{ idx }}">{{ ticket.reservation_seconds_left }}</span>s)
+                    </span>
+                  {% elif ticket.purchase_status == 'FRE' %}
+                    <span class="badge badge-info py-2 px-3 gap-1 text-sm">🎫 Free</span>
+                  {% else %}
+                    <span class="badge badge-neutral py-2 px-3 gap-1 text-sm">{{ ticket.get_purchase_status_display }}</span>
+                  {% endif %}
+                  <p class="text-xs opacity-60">
+                    Purchased: {{ ticket.purchase_date|date:'M d, Y · H:i' }}
+                  </p>
+                </div>
+              </div>
+
+            {% if ticket.purchase_status in 'A FRE P' %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          {% endwith %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="flex flex-col items-center justify-center mt-20 text-center opacity-70">
+        <div class="text-6xl mb-4">🕳</div>
+        <p class="text-lg">You haven’t booked any tickets yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Countdown Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const timers = document.querySelectorAll("[id^='countdown-']");
+  timers.forEach(el => {
+    let seconds = parseInt(el.textContent);
+    const interval = setInterval(() => {
+      if (seconds > 0) {
+        seconds--;
+        el.textContent = seconds;
+      } else {
+        clearInterval(interval);
+        const card = el.closest(".card, a, div");
+        if (card) {
+          card.classList.add("opacity-60", "cursor-not-allowed");
+          const link = card.closest("a");
+          if (link) link.removeAttribute("href");
+        }
+        el.textContent = "Expired";
+      }
+    }, 1000);
+  });
+});
+</script>
+{% endblock %}

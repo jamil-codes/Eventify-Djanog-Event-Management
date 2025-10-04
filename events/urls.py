@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import event_views, ticket_type_views, ticket_views
+from .views import event_views, ticket_purchase_views, ticket_type_views, ticket_views
 
 app_name = 'events'
 urlpatterns = [
@@ -19,16 +19,20 @@ urlpatterns = [
     path('<uuid:event_pk>/delete-ticket-type/<uuid:ticket_type_pk>/',
          ticket_type_views.delete_ticket_type, name='delete_ticket_type'),
 
-    # -------------------------  Ticket Views  -----------------------
+    # ---------------------  Ticket Pruchase Views  --------------------
     path('<uuid:event_pk>/purchase-ticket/<uuid:ticket_type_pk>/',
-         ticket_views.buy_ticket, name='buy_ticket'),
+         ticket_purchase_views.buy_ticket, name='buy_ticket'),
     path('<uuid:event_pk>/confirm-ticket-purchase/<str:ticket_code>/',
-         ticket_views.confirm_purchase, name='confirm_ticket_purchase'),
+         ticket_purchase_views.confirm_purchase, name='confirm_ticket_purchase'),
     path('<uuid:event_pk>/cancel-reservation/<str:ticket_code>/',
-         ticket_views.cancel_reservation, name='cancel_reservation'),
+         ticket_purchase_views.cancel_reservation, name='cancel_reservation'),
 
     path('<uuid:event_pk>/ticket-purchase/success/<str:ticket_code>/',
-         ticket_views.success_ticket_purchase, name='success_ticket_purchase'),
+         ticket_purchase_views.success_ticket_purchase, name='success_ticket_purchase'),
     path('<uuid:event_pk>/ticket-purchase/cancel/<str:ticket_code>/',
-         ticket_views.cancel_ticket_purchase, name='cancel_ticket_purchase')
+         ticket_purchase_views.cancel_ticket_purchase, name='cancel_ticket_purchase'),
+
+    # ---------------------  Ticket Views  --------------------
+    path('tickets/', ticket_views.tickets, name="tickets")
+
 ]
