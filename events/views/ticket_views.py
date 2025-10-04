@@ -7,8 +7,8 @@ from ..models import Ticket, PurchaseStatus
 @login_required
 def tickets(request):
     now = timezone.now()
-    
-    # Delete expired pending tickets (reservation timeout passed)
+
+    # Clean up expired reservations
     expired_qs = Ticket.objects.filter(
         attendee=request.user,
         purchase_status=PurchaseStatus.PENDING,
@@ -17,7 +17,7 @@ def tickets(request):
     if expired_qs.exists():
         expired_qs.delete()
 
-    # Fetch user's valid tickets, ordered logically
+    # Fetch all user's tickets efficiently
     tickets = (
         Ticket.objects
         .filter(attendee=request.user)
@@ -27,11 +27,21 @@ def tickets(request):
             "ticket_type__event__organizer"
         )
         .order_by(
-            "-purchase_date",     # newest first
-            "ticket_type__event__start_time"
+            # Group by event time (soonest first)
+            "ticket_type__event__start_time",
+            "-purchase_date"                   # Within event, newest ticket first
         )
     )
 
+    # Optional grouping by event for the template (cleaner UX)
+    grouped_tickets = {}
+    for ticket in tickets:
+        event = ticket.ticket_type.event
+        if event not in grouped_tickets:
+            grouped_tickets[event] = []
+        grouped_tickets[event].append(ticket)
+
     return render(request, "events/ticket_templates/tickets.html", {
-        "tickets": tickets,
+        "grouped_tickets": grouped_tickets,
+        "tickets": tickets,  # kept for fallback
     })

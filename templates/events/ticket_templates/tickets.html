@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% load thumbnail tz %}
 
+{% block title %}🎟 My Tickets | Jamil Codes{% endblock %}
+
 {% block body %}
 <div class="min-h-[70dvh] bg-base-200 flex flex-col items-center px-4 py-10">
   <div class="max-w-5xl w-full">
@@ -31,9 +33,15 @@
                   {% endthumbnail %}
 
                   <div class="flex flex-col gap-1">
-                    <h2 class="text-lg sm:text-xl font-semibold leading-tight">{{ ticket.ticket_type.event.title }}</h2>
-                    <p class="text-sm text-base-content/70">Type: <span class="font-medium">{{ ticket.ticket_type.name }}</span></p>
-                    <p class="text-sm text-base-content/70">Code: <span class="font-mono">{{ ticket.ticket_code }}</span></p>
+                    <h2 class="text-lg sm:text-xl font-semibold leading-tight">
+                      {{ ticket.ticket_type.event.title }}
+                    </h2>
+                    <p class="text-sm text-base-content/70">
+                      Type: <span class="font-medium">{{ ticket.ticket_type.name }}</span>
+                    </p>
+                    <p class="text-sm text-base-content/70">
+                      Code: <span class="font-mono">{{ ticket.ticket_code }}</span>
+                    </p>
 
                     <!-- Event Time -->
                     <div class="mt-2 space-y-0.5">
@@ -42,7 +50,9 @@
                         {% timezone ticket.ticket_type.event.organizer.timezone %}
                           {{ ticket.ticket_type.event.start_time|date:'M d, Y · H:i' }}
                         {% endtimezone %}
-                        <span class="text-[10px] text-base-content/60">({{ ticket.ticket_type.event.organizer.timezone }})</span>
+                        <span class="text-[10px] text-base-content/60">
+                          ({{ ticket.ticket_type.event.organizer.timezone }})
+                        </span>
                       </p>
                       {% if request.user.is_authenticated and request.user.timezone != ticket.ticket_type.event.organizer.timezone %}
                         <p class="text-[11px] text-base-content/60 pl-5">
@@ -72,7 +82,9 @@
                   {% elif ticket.purchase_status == 'FRE' %}
                     <span class="badge badge-info py-2 px-3 gap-1 text-sm">🎫 Free</span>
                   {% else %}
-                    <span class="badge badge-neutral py-2 px-3 gap-1 text-sm">{{ ticket.get_purchase_status_display }}</span>
+                    <span class="badge badge-neutral py-2 px-3 gap-1 text-sm">
+                      {{ ticket.get_purchase_status_display }}
+                    </span>
                   {% endif %}
                   <p class="text-xs opacity-60">
                     Purchased: {{ ticket.purchase_date|date:'M d, Y · H:i' }}
@@ -109,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         el.textContent = seconds;
       } else {
         clearInterval(interval);
-        const card = el.closest(".card, a, div");
+        const card = el.closest("a, div");
         if (card) {
           card.classList.add("opacity-60", "cursor-not-allowed");
           const link = card.closest("a");
