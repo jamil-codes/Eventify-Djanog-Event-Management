@@ -37,11 +37,16 @@ def sync_ticket_payment(ticket: Ticket) -> bool:
     return False
 
 
-def get_stripe_checkout_url(ticket: Ticket, success_url: str, cancel_url: str) -> str:
+def get_stripe_checkout_url(ticket: Ticket, success_url: str, cancel_url: str) -> str | None:
     """
     Return a Stripe checkout URL for a pending ticket.
     Must call sync_ticket_payment first to ensure DB is up to date.
     """
+    if not ticket:
+        return None
+    else:
+        sync_ticket_payment(ticket)
+
     # Create/retrieve Stripe Product
     if not ticket.stripe_product_id:
         product = stripe.Product.create(

@@ -10,6 +10,9 @@
 
     <form class="mb-5 flex flex-col justify-start items-start gap-4 w-full [&_>*]:w-full" action="{% url 'authentication:login' %}" method="post">
       {% csrf_token %}
+      {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}" />
+      {% endif %}
       <div>
         <label for="id_username">Username:</label>
         {{ form.username }}
