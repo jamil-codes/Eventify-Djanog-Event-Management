@@ -33,6 +33,9 @@ urlpatterns = [
          ticket_purchase_views.cancel_ticket_purchase, name='cancel_ticket_purchase'),
 
     # ---------------------  Ticket Views  --------------------
-    path('tickets/', ticket_views.tickets, name="tickets")
-
+    path('tickets/', ticket_views.tickets, name="tickets"),
+    path('ticket/<str:ticket_code>/',
+         ticket_views.ticket_details, name="ticket_details"),
+    path('tickets/<str:ticket_code>/download-pdf/',
+         ticket_views.download_ticket_pdf, name='download_ticket_pdf'),
 ]

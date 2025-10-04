@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static thumbnail tz %}
+
+{% block title %}
+  🎫 Ticket — {{ ticket.ticket_type.event.title }} | Jamil Codes
+{% endblock %}
+
+{% block body %}
+  <div class="min-h-screen bg-base-100 py-12 px-4 flex justify-center">
+    <div class="w-full max-w-5xl">
+      <!-- Ticket Card -->
+      <div class="card bg-base-200 shadow-2xl border border-base-300 rounded-3xl overflow-hidden">
+        <!-- Header -->
+        <div class="relative w-full">
+          {% if ticket.ticket_type.event.image %}
+            {% thumbnail ticket.ticket_type.event.image '1024x256' crop='center' as thumb %}
+            <img src="{{ thumb.url }}" alt="{{ ticket.ticket_type.event.title }}" class="w-full h-64 sm:h-72 md:h-80 object-cover" loading="lazy" />
+            {% endthumbnail %}
+          {% else %}
+            <div class="w-full h-64 sm:h-72 md:h-80 bg-base-300 flex items-center justify-center text-base-content/50">No Image</div>
+          {% endif %}
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow-md mb-1">{{ ticket.ticket_type.event.title }}</h1>
+            <p class="text-sm sm:text-base text-gray-200 drop-shadow-sm">Organized by {{ ticket.ticket_type.event.organizer.name }}</p>
+          </div>
+        </div>
+
+        <!-- Ticket Content -->
+        <div class="p-6 sm:p-10 md:p-12">
+          <div class="flex flex-col md:flex-row gap-10 md:gap-12">
+            <!-- Left Column: Ticket Info -->
+            <div class="flex-1 space-y-4">
+              <div>
+                <p class="text-sm text-gray-500">Ticket Type</p>
+                <p class="text-lg font-semibold text-base-content">{{ ticket.ticket_type.name }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Ticket Code</p>
+                <p class="font-mono tracking-wider text-lg text-base-content">{{ ticket.ticket_code }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Purchase Date</p>
+                <p class="text-base-content">{{ ticket.purchase_date|date:'M d, Y · H:i' }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Event Start</p>
+                <p class="text-base-content font-medium">
+                  {% timezone ticket.ticket_type.event.organizer.timezone %}
+                  {{ ticket.ticket_type.event.start_time|date:'M d, Y · H:i' }}
+                  {% endtimezone %}
+                  <span class="text-xs text-base-content/60">({{ ticket.ticket_type.event.organizer.timezone }})</span>
+                </p>
+                {% if request.user.is_authenticated and request.user.timezone != ticket.ticket_type.event.organizer.timezone %}
+                  <p class="pl-6 text-xs text-base-content/50 mt-1">
+                    Your local:{% timezone request.user.timezone %}
+                    {{ ticket.ticket_type.event.start_time|date:'M d, Y · H:i' }}
+                    {% endtimezone %}
+                    <span class="text-[10px]">({{ request.user.timezone }})</span>
+                  </p>
+                {% endif %}
+              </div>
+
+              <!-- Price & Status -->
+              <div class="divider"></div>
+              <div class="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
+                <!-- Price -->
+                <div class="flex-1">
+                  <p class="text-sm text-gray-500">Price</p>
+                  {% if ticket.ticket_type.price > 0 %}
+                    <p class="text-2xl font-bold text-primary">$ {{ ticket.ticket_type.price }}</p>
+                  {% else %}
+                    <p class="text-2xl font-bold text-success">FREE</p>
+                  {% endif %}
+                </div>
+
+                <!-- Payment Status -->
+                <div class="flex-1 flex justify-end">
+                  <div class="flex flex-col items-end gap-2">
+                    <p class="text-sm text-gray-500 text-right">Payment Status</p>
+                    {% if ticket.purchase_status == 'A' %}
+                      <span class="inline-flex items-center justify-center bg-green-600 text-white rounded-xl py-1.5 px-3 text-lg font-semibold shadow hover:scale-105 transition-transform border border-green-400">✅ Paid</span>
+                    {% elif ticket.purchase_status == 'P' %}
+                      <span class="inline-flex items-center justify-center bg-yellow-600 text-white rounded-xl py-1.5 px-3 text-lg font-semibold shadow border border-yellow-500">⌛ Pending</span>
+                    {% elif ticket.purchase_status == 'FRE' %}
+                      <span class="inline-flex items-center justify-center bg-blue-600 text-white rounded-xl py-1.5 px-3 text-lg font-semibold shadow hover:scale-105 transition-transform border border-blue-400">🎫 Free</span>
+                    {% else %}
+                      <span class="inline-flex items-center justify-center bg-red-600 text-white rounded-xl py-1.5 px-3 text-lg font-semibold shadow border border-red-400">❌ Cancelled</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: QR + Download -->
+            <div class="flex-1 flex flex-col items-center md:items-end text-center md:text-right bg-base-300/20 rounded-3xl p-6 md:p-8 shadow-inner gap-4 justify-center">
+              <div class="bg-base-100 border border-base-300 rounded-2xl shadow-lg w-48 h-48 flex items-center justify-center">
+                {% if ticket.purchase_status == 'A' or ticket.purchase_status == 'FRE' %}
+                  <!-- QR Placeholder for valid tickets -->
+                  <span class="opacity-40 text-sm">QR Code<br />Coming Soon</span>
+                {% else %}
+                  <!-- Disabled QR for pending/cancelled -->
+                  <span class="opacity-30 text-sm">QR Not Available</span>
+                {% endif %}
+              </div>
+              <p class="text-sm text-base-content/70">Scan to verify or check in</p>
+
+              {% if ticket.purchase_status == 'A' or ticket.purchase_status == 'FRE' %}
+                <a href="{% url 'events:download_ticket_pdf' ticket.ticket_code %}" class="btn btn-primary mt-4 btn-wide shadow-xl hover:scale-105 transition-transform">⬇ Download Ticket PDF</a>
+              {% else %}
+                <button class="btn btn-disabled mt-4 btn-wide shadow-xl cursor-not-allowed">⬇ Download Not Available</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="text-center mt-10">
+        <a href="{% url 'events:tickets' %}" class="btn btn-outline btn-wide hover:scale-105 transition-transform">← Back to My Tickets</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
