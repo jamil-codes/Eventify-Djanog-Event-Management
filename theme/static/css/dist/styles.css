@@ -3343,6 +3343,9 @@
   .opacity-70 {
     opacity: 70%;
   }
+  .opacity-80 {
+    opacity: 80%;
+  }
   .opacity-100 {
     opacity: 100%;
   }
@@ -3521,6 +3524,11 @@
     }
   }
   @media (hover: hover) {
+    .hover\:bg-base-200:hover {
+      background-color: var(--color-base-200);
+    }
+  }
+  @media (hover: hover) {
     .hover\:bg-base-200\/40:hover {
       background-color: var(--color-base-200);
     }
@@ -3590,6 +3598,9 @@
   }
   .focus\:ring-gray-200:focus {
     --tw-ring-color: var(--color-gray-200);
+  }
+  .focus\:ring-primary:focus {
+    --tw-ring-color: var(--color-primary);
   }
   .focus\:outline-none:focus {
     --tw-outline-style: none;

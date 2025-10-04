@@ -1,7 +1,9 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 from ..models import Ticket, PurchaseStatus
+from ..utils import sync_ticket_payment
+from django.shortcuts import render
+from django.utils import timezone
+from django.contrib import messages
 
 
 @login_required
@@ -14,8 +16,10 @@ def tickets(request):
         purchase_status=PurchaseStatus.PENDING,
         reservation_expires_at__lt=now
     )
-    if expired_qs.exists():
-        expired_qs.delete()
+
+    for ticket in expired_qs:
+        if not sync_ticket_payment(ticket):
+            ticket.delete()
 
     # Fetch all user's tickets efficiently
     tickets = (
