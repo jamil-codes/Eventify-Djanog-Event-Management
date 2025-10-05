@@ -111,14 +111,12 @@
         background: #fff;
         border: 1px dashed #d1d5db;
         padding: 12px;
-        border-radius: 6px;
         text-align: center;
       }
       .qr-img {
         width: 150px;
         height: 150px;
         object-fit: cover;
-        border-radius: 4px;
         border: 1px solid rgba(12, 18, 28, 0.06);
       }
       .qr-text {
@@ -250,19 +248,59 @@
           </div>
           <div class="status {% if ticket.purchase_status == 'A' %}
               
+
+
+
+
+
               PAID
+
+
+
+
+
 
             {% elif ticket.purchase_status == 'FRE' %}
               
+
+
+
+
+
               FREE
+
+
+
+
+
 
             {% elif ticket.purchase_status == 'P' %}
               
+
+
+
+
+
               PENDING
+
+
+
+
+
 
             {% else %}
               
+
+
+
+
+
               CANCELLED
+
+
+
+
+
 
             {% endif %}">
             {% if ticket.purchase_status == 'A' %}
