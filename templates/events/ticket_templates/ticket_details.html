@@ -94,11 +94,9 @@
             <!-- Right Column: QR + Download -->
             <div class="flex-1 flex flex-col items-center md:items-end text-center md:text-right bg-base-300/20 rounded-3xl p-6 md:p-8 shadow-inner gap-4 justify-center">
               <div class="bg-base-100 border border-base-300 rounded-2xl shadow-lg w-48 h-48 flex items-center justify-center">
-                {% if ticket.purchase_status == 'A' or ticket.purchase_status == 'FRE' %}
-                  <!-- QR Placeholder for valid tickets -->
-                  <span class="opacity-40 text-sm">QR Code<br />Coming Soon</span>
+                {% if qr_base64 %}
+                  <img src="data:image/png;base64,{{ qr_base64 }}" alt="Ticket QR Code" class="w-40 h-40" />
                 {% else %}
-                  <!-- Disabled QR for pending/cancelled -->
                   <span class="opacity-30 text-sm">QR Not Available</span>
                 {% endif %}
               </div>

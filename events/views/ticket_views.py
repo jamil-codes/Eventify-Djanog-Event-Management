@@ -1,9 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
-from django.contrib import messages
+from django.template.loader import render_to_string
 from ..models import Ticket, PurchaseStatus
 from ..utils import sync_ticket_payment
+from django.http import HttpResponse
+from django.contrib import messages
+from django.utils import timezone
+from weasyprint import HTML, CSS
+import base64
+import qrcode
+import io
 
 
 @login_required
@@ -67,12 +73,66 @@ def ticket_details(request, ticket_code):
             request, "You do not have permission to view this ticket.")
         return redirect("events:tickets")
 
+    qr_base64 = None
+    if ticket.purchase_status in ['A', 'FRE']:
+        qr_data = ticket.ticket_code
+        qr_img = qrcode.make(qr_data)
+        buffer = io.BytesIO()
+        qr_img.save(buffer, format='PNG')
+        qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
     return render(request, 'events/ticket_templates/ticket_details.html', {
-        "ticket": ticket
+        "ticket": ticket,
+        "qr_base64": qr_base64,
     })
 
 
 @login_required
 def download_ticket_pdf(request, ticket_code):
-    messages.success(request, f"Ticket {ticket_code} Downloaded Successfully!")
-    return redirect("events:ticket_details", ticket_code)
+    ticket = get_object_or_404(Ticket, ticket_code=ticket_code)
+
+    if ticket.attendee != request.user:
+        messages.error(
+            request, "You do not have permission to download this ticket.")
+        return redirect("events:tickets")
+
+    if ticket.purchase_status not in ['A', 'FRE']:
+        messages.error(request, "This ticket is not available for download.")
+        return redirect("events:tickets")
+
+    # Generate QR as base64
+    qr_img = qrcode.make(ticket.ticket_code)
+    buffer = io.BytesIO()
+    qr_img.save(buffer, format='PNG')
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+    # Render HTML template
+    html_string = render_to_string(
+        "events/ticket_templates/pdf_template.html",
+        {"ticket": ticket, "qr_base64": qr_base64, "request": request}
+    )
+
+    base_url = request.build_absolute_uri('/')
+
+    # Add matching page CSS
+    page_css = """
+            @page {
+            size: 680px 560px;
+            margin: 0;
+            }
+            html, body {
+            width: 680px;
+            height: 555px;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            }
+        """
+
+    pdf = HTML(string=html_string, base_url=base_url).write_pdf(
+        stylesheets=[CSS(string=page_css)]
+    )
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=\"ticket_{ticket.ticket_code}.pdf\"'
+    return response
