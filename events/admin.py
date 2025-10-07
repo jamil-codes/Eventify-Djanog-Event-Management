@@ -1,6 +1,6 @@
 # events/admin.py
 from django.contrib import admin
-from .models import Ticket, TicketType, Event
+from .models import Ticket, TicketType, Event, Contact
 
 
 @admin.register(Event)
@@ -46,3 +46,10 @@ class TicketAdmin(admin.ModelAdmin):
     def is_expired_display(self, obj):
         return "✅ Yes" if obj.is_expired else "❌ No"
     is_expired_display.short_description = "Expired?"
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    fields = ['name', 'email', 'message']
+    readonly_fields = ['name', 'email', 'message']
+    ordering = ['pk']

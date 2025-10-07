@@ -135,3 +135,12 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f'{self.ticket_code} | {self.ticket_type.name} for {self.ticket_type.event.title}'
+
+
+class Contact(models.Model):
+    name = models.CharField(max_length=128)
+    email = models.EmailField(max_length=254)
+    message = models.TextField(blank=False)
+
+    def __str__(self):
+        return f'{self.name} + ({self.email})'

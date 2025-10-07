@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load thumbnail tz static %}
+
+{% block title %}
+  Eventify | Discover, Create & Manage Events
+{% endblock %}
+
+{% block body %}
+  <div class="bg-base-100 text-base-content">
+    <!-- Hero Section -->
+    <section class="min-h-[90vh] flex flex-col justify-center items-center text-center bg-gradient-to-b from-primary/10 to-base-100 px-4 py-20">
+      <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight">Discover. Create. Experience.</h1>
+      <p class="text-lg md:text-xl opacity-80 max-w-2xl mb-8">Your one-stop platform for hosting and attending unforgettable events.</p>
+      <div class="flex flex-wrap justify-center gap-4">
+        {% if request.user.is_authenticated and request.user.role == 'organizer' or request.user.role == 'admin' %}
+          <a href="{% url 'events:add_event' %}" class="btn btn-primary btn-lg">+ Create an Event</a>
+        {% endif %}
+
+        <a href="{% url 'events:events' %}" class="btn btn-outline btn-lg">Browse Events</a>
+      </div>
+    </section>
+
+    <!-- Featured Events -->
+    <section class="max-w-7xl mx-auto px-4 py-20">
+      <h2 class="text-4xl font-bold mb-12 text-center">🔥 Featured Events</h2>
+      {% if events %}
+        <div class="grid gap-8 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
+          {% for event in events %}
+            <a href="{% url 'events:event_detail' event.pk %}" class="group bg-base-200 border border-base-300 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+              {% if event.image %}
+                {% thumbnail event.image '600x400' crop='center' as thumb %}
+                <img src="{{ thumb.url }}" alt="{{ event.title }}" class="w-full h-56 object-cover" />
+                {% endthumbnail %}
+              {% else %}
+                <img src="{% static 'images/default-event.jpg' %}" alt="Eventify Default Event" class="w-full h-56 object-cover" />
+              {% endif %}
+              <div class="p-5 flex flex-col gap-2">
+                <h3 class="text-xl font-semibold group-hover:text-primary transition">{{ event.title }}</h3>
+                <p class="text-sm text-base-content/70 line-clamp-2">{{ event.description|truncatewords:20 }}</p>
+                <div class="text-sm opacity-70 mt-2">
+                  🗓{% timezone event.organizer.timezone %}
+                  {{ event.start_time|date:'M d, Y · H:i' }}
+                  {% endtimezone %}
+                </div>
+                <p class="text-sm opacity-70">📍 {{ event.location }}</p>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center opacity-60 mt-16">
+          <p class="text-lg">No featured events available right now.</p>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- Browse by Location -->
+    {% if popular_locations %}
+      <section class="bg-base-200 py-20">
+        <div class="max-w-6xl mx-auto text-center px-4">
+          <h2 class="text-4xl font-bold mb-10">📍 Browse by Location</h2>
+          <div class="grid gap-6 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+            {% for loc in popular_locations %}
+              <div class="p-8 bg-base-100 border border-base-300 rounded-2xl hover:shadow-lg hover:-translate-y-1 transition-all">
+                <h3 class="text-xl font-semibold mb-2">{{ loc }}</h3>
+                <p class="text-sm opacity-70">Find exciting events happening in {{ loc }}.</p>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <!-- About -->
+    <section class="max-w-6xl mx-auto px-4 py-20 flex flex-col md:flex-row gap-10 items-center">
+      <div class="flex-1">
+        <h2 class="text-4xl font-bold mb-6">Why Choose Eventify?</h2>
+        <p class="text-lg opacity-80 mb-6">Eventify empowers organizers to create seamless events and gives attendees an effortless discovery experience. From ticketing to check-in, everything works smoothly — because you deserve an intuitive, modern platform.</p>
+        <ul class="list-disc ml-6 space-y-2 opacity-80">
+          <li>🎫 Instant digital ticket generation</li>
+          <li>💳 Secure Stripe payments integration</li>
+          <li>📅 Real-time event management</li>
+          <li>🌐 Built with Django & Tailwind for performance</li>
+        </ul>
+      </div>
+      <div class="flex-1 flex justify-center">
+        <img src="{% static 'images/about.jpg' %}" alt="About Eventify" class="max-w-sm w-full rounded-xl shadow-md" />
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="bg-base-200 py-20">
+      <div class="max-w-6xl mx-auto px-4 text-center">
+        <h2 class="text-4xl font-bold mb-12">💬 What People Say</h2>
+        <div class="grid gap-8 grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
+          <div class="p-8 bg-base-100 border border-base-300 rounded-2xl shadow-md">
+            <p class="italic opacity-80 mb-4">“Eventify made our conference effortless — ticketing and attendance tracking were flawless.”</p>
+            <h4 class="font-semibold">— Sarah, Tech Organizer</h4>
+          </div>
+          <div class="p-8 bg-base-100 border border-base-300 rounded-2xl shadow-md">
+            <p class="italic opacity-80 mb-4">“Finally, a platform that looks great and just works. Love the clean design!”</p>
+            <h4 class="font-semibold">— Daniel, Music Promoter</h4>
+          </div>
+          <div class="p-8 bg-base-100 border border-base-300 rounded-2xl shadow-md">
+            <p class="italic opacity-80 mb-4">“Buying tickets was smooth and fast. I’ll definitely use it again.”</p>
+            <h4 class="font-semibold">— Ayesha, Attendee</h4>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Form -->
+    <section id="contact" class="max-w-5xl mx-auto px-4 py-20">
+      <h2 class="text-4xl font-bold mb-8 text-center">📩 Contact Us</h2>
+      <p class="text-center opacity-80 mb-10 max-w-2xl mx-auto">Have a question or suggestion? We'd love to hear from you. Send us a message and our team will respond shortly.</p>
+      <form method="post" action="{% url 'contact' %}" class="grid gap-6">
+        {% csrf_token %}
+        <div class="grid md:grid-cols-2 gap-6">
+          <input type="text" name="name" placeholder="Your Name" class="input input-bordered w-full" required />
+          <input type="email" name="email" placeholder="Your Email" class="input input-bordered w-full" required />
+        </div>
+        <textarea name="message" rows="5" placeholder="I want to become and organizer..." class="textarea textarea-bordered w-full" required></textarea>
+        <button type="submit" class="btn btn-primary w-fit mx-auto px-10">Send Message</button>
+      </form>
+    </section>
+  </div>
+{% endblock %}
